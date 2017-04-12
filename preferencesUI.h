@@ -43,10 +43,9 @@ private slots:
     void on_lineEdit_envValueRenderman_textChanged(const QString &arg1);
     void on_lineEdit_envValueMaya_textChanged(const QString &arg1);
     void on_lineEdit_envValuePath_textChanged(const QString &arg1);
-
     void on_lineEdit_configFiles_editingFinished();
-
     void on_lineEdit_appPath_editingFinished();
+
 
 private:
     Ui::Preferences *ui;

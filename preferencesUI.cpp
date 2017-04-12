@@ -133,7 +133,6 @@ void Preferences::on_btn_close_clicked()
 
         switch (msg) {
         case QMessageBox::Yes:
-            // saveSettings
             saveSettings();
             break;
         default:
