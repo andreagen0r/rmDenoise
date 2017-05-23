@@ -12,6 +12,15 @@ Preferences::Preferences(QWidget *parent) :
 
     connect(ui->btn_close, SIGNAL(released()), this, SLOT(closeCheck()));
     connect(this, SIGNAL(finished(int)), ui->btn_close, SLOT(click()));
+
+    myCompleter = new QCompleter(this);
+    myCompleter->setModel(new QDirModel(myCompleter));
+    myCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+    myCompleter->setCompletionMode(QCompleter::PopupCompletion);
+    ui->lineEdit_appPath->setCompleter(myCompleter);
+    ui->lineEdit_configFiles->setCompleter(myCompleter);
+    ui->lineEdit_envValueMaya->setCompleter(myCompleter);
+    ui->lineEdit_envValueRenderman->setCompleter(myCompleter);
 }
 
 Preferences::~Preferences()

@@ -40,6 +40,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(timer, SIGNAL(timeout()), this, SLOT(renderProgress()));
 
     connect(pxrD, SIGNAL(renderOutputMessage(QString)), this, SLOT(statusBarMsg(QString)));
+
+    myCompleter = new QCompleter(this);
+    myCompleter->setModel(new QDirModel(myCompleter));
+    myCompleter->setCaseSensitivity(Qt::CaseInsensitive);
+    myCompleter->setCompletionMode(QCompleter::PopupCompletion);
+    ui->lineEdit_imagePath->setCompleter(myCompleter);
+    ui->lineEdit_outdir->setCompleter(myCompleter);
 }
 
 MainWindow::~MainWindow()

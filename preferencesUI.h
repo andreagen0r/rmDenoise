@@ -12,6 +12,9 @@
 #include <QDir>
 #include <QSysInfo>
 
+#include <QCompleter>
+#include <QDirModel>
+
 #include "settings.h"
 
 namespace Ui {
@@ -51,6 +54,8 @@ private slots:
 
 private:
     Ui::Preferences *ui;
+
+    QCompleter *myCompleter;
 
     void saveSettings();
     void showSettings(const QStringList &value);

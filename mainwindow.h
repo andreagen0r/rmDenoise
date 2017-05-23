@@ -10,9 +10,10 @@
 #include <QMessageBox>
 #include <iostream>
 #include <QRegularExpression>
-
-#include<QProgressDialog>
-#include<QTimer>
+#include <QProgressDialog>
+#include <QTimer>
+#include <QCompleter>
+#include <QDirModel>
 
 #include "pxrdenoise.h"
 #include "preferencesUI.h"
@@ -56,6 +57,8 @@ private:
     PXRDenoise *pxrD;
     QTimer *timer;
     Utils *utl;
+
+    QCompleter *myCompleter;
 
     QString render();
     void createFlagLine();
