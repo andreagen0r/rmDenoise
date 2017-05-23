@@ -3,17 +3,17 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
+    QApplication app(argc, argv);
 
 //    QFile file(":/stylesheet.qss");
 //    if(file.open(QIODevice::ReadOnly | QIODevice::Text))
 //    {
-//        a.setStyleSheet(file.readAll());
+//        app.setStyleSheet(file.readAll());
 //        file.close();
 //    }
 
     MainWindow w;
     w.show();
 
-    return a.exec();
+    return app.exec();
 }

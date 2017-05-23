@@ -34,33 +34,28 @@ private slots:
     void on_btn_run_clicked();
     void on_btn_ImagePath_clicked();
     void on_btn_outDir_clicked();
+    void on_actionAboutQT_triggered();
     void on_actionAbout_triggered();
-    void on_actionAbout_2_triggered();
-    void on_actionPreferences_2_triggered();
+    void on_actionPreferences_triggered();
     void on_chbox_crossframe_stateChanged(int arg1);
     void on_lineEdit_imagePath_editingFinished();
     void on_lineEdit_outdir_editingFinished();
     void on_lineEdit_name_editingFinished();
-    void on_actionHelp_triggered();
-    void on_pushButton_clicked();
 
-    void renderStatus(bool arg1);
+
+    void renderStatus(const bool &arg1);
     void renderProgress();
 
-    void statusBarMsg(QString value);
+    void statusBarMsg(const QString &value);
 
     void loadConfigFiles();
 
 private:
     Ui::MainWindow *ui;
-
-    Preferences *prefUi = new Preferences(this);
-
-    PXRDenoise *pxrD = new PXRDenoise;
-
-    QTimer *timer = new QTimer(this);
-
-    Utils *utl = new Utils(this);
+    Preferences *prefUi;
+    PXRDenoise *pxrD;
+    QTimer *timer;
+    Utils *utl;
 
     QString render();
     void createFlagLine();
@@ -84,10 +79,10 @@ private:
     void setFlag_configFiles(const QStringList &value);
 
     int getFlag_Threads() const;
-    void setFlag_Threads(int value);
+    void setFlag_Threads(const int &value);
 
     int getProg() const;
-    void setProg(int value = 0);
+    void setProg(const int &value = 0);
 
     QString flag_name;
     QDir flag_outDir;

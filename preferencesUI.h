@@ -27,14 +27,13 @@ public:
     ~Preferences();
 
 signals:
-       void configFilesUpdate();
+       void preferencesUpdate();
 
 private slots:
     void on_toolButton_appPath_clicked();
     void on_toolButton_configFiles_clicked();
     void on_btn_save_clicked();
     void on_btn_loadDefault_clicked();
-    void on_btn_close_clicked();
     void on_lineEdit_appPath_textChanged(const QString &arg1);
     void on_lineEdit_configFiles_textChanged(const QString &arg1);
     void on_lineEdit_envKeyRenderman_textChanged(const QString &arg1);
@@ -43,19 +42,21 @@ private slots:
     void on_lineEdit_envValueRenderman_textChanged(const QString &arg1);
     void on_lineEdit_envValueMaya_textChanged(const QString &arg1);
     void on_lineEdit_envValuePath_textChanged(const QString &arg1);
+
     void on_lineEdit_configFiles_editingFinished();
+
     void on_lineEdit_appPath_editingFinished();
 
+    void closeCheck();
 
 private:
     Ui::Preferences *ui;
 
-    bool getStateChange() const;
-    void setStateChange(bool value);
-
     void saveSettings();
-    void showSettings();
+    void showSettings(const QStringList &value);
 
+    bool isStateChange() const;
+    void setStateChange(const bool &value);
     bool stateChange;
 };
 

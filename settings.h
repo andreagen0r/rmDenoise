@@ -6,6 +6,7 @@
 #include <QSettings>
 #include <QString>
 #include <QStringList>
+#include <QSysInfo>
 
 class Settings
 {
@@ -15,11 +16,10 @@ public:
 
     QSettings* settings = new QSettings(":/resource/", QSettings::IniFormat);
 
-    void setSettings(const QString appPath, const QString configFilesPath, const QString keyRM, const QString valRM,
-                      const QString keyMaya, const QString valMaya, const QString keyPath, const QString valPath);
-    void setSettings(const QString appPath);
-    QStringList getSettings();
+    void setSettings(const QString &appPath, const QString &configFilesPath, const QString &keyRM, const QString &valRM,
+                      const QString &keyMaya, const QString &valMaya, const QString &keyPath, const QString &valPath);
 
+    QStringList getSettings();
     QStringList getDefaultSettings();
 
     QVariant getApplicationPath() const;
@@ -58,7 +58,6 @@ private:
     QVariant envValueMaya;
     QVariant envKeyPath;
     QVariant envValuePath;
-
 };
 
 #endif // SETTINGS_H

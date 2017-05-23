@@ -17,10 +17,6 @@ public:
     QStringList notValidImages(const QStringList &value);
     QStringList validImages(const QStringList &value);
     bool checkDir(const QString &value);
-
-signals:
-
-public slots:
 };
 
 #endif // UTILS_H

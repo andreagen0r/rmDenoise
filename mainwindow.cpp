@@ -4,15 +4,16 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    prefUi = new Preferences(this);
+    pxrD = new PXRDenoise;
+    timer = new QTimer(this);
+    utl = new Utils(this);
 
-    Settings::getInstance()->getSettings();
+    connect(prefUi, SIGNAL(preferencesUpdate()), this, SLOT(loadConfigFiles()));
+    emit prefUi->preferencesUpdate();
 
-    // Load config files to configFiles
-    loadConfigFiles();
-    connect(prefUi, SIGNAL(configFilesUpdate()), this, SLOT(loadConfigFiles()));
-
-    int n = QThread::idealThreadCount(); // Verify how many threads there are in the computer
-    ui->spnBox_threads->setMaximum(n); // Set the max number of threads to the spinBox
+    // Verify how many threads there are in the computer and set the max number of threads to the spinBox
+    ui->spnBox_threads->setMaximum(QThread::idealThreadCount());
 
     ui->lineEdit_imagePath->setAttribute(Qt::WA_MacShowFocusRect, 0);
     ui->lineEdit_layers->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -32,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(ui->chbox_layers, SIGNAL(toggled(bool)), ui->lineEdit_layers, SLOT(setEnabled(bool)));
     connect(ui->chbox_t, SIGNAL(toggled(bool)), ui->spnBox_threads, SLOT(setEnabled(bool)));
     connect(ui->chbox_override, SIGNAL(toggled(bool)), ui->lineEdit_override, SLOT(setEnabled(bool)));
+
+    connect(ui->btn_close, SIGNAL(released()), this, SLOT(close()));
 
     connect(pxrD, SIGNAL(renderStatus(bool)), this, SLOT(renderStatus(bool)));
     connect(timer, SIGNAL(timeout()), this, SLOT(renderProgress()));
@@ -84,25 +87,19 @@ void MainWindow::on_btn_run_clicked()
     {
         msg = "No image(s) selected!";
     }
-    ui->statusBar->showMessage("");
-    ui->textEdit_commandLine->setText(msg);
 
-//    qDebug() << "******************** START DEBUG BLOCK ****************************\n";
-//    qDebug() << "FlagLine: " << pxrD->getFlagLine();
-//    qDebug() << "Flag image Path: " << getFlag_images();
-//    qDebug() << "Flag -o: " << getFlag_name();
-//    qDebug() << "Flag outdir: " << getFlag_outDir();
-//    qDebug() << "Flag configfiles: " << getFlag_configFiles();
-//    qDebug() << "Flag layers: " << getFlag_layers();
-//    qDebug() << "Flag override: " << getFlag_override();
-//    qDebug() << "\n******************** END DEBUG BLOCK ******************************";
+    ui->statusBar->clearMessage();
+    ui->textEdit_commandLine->setText(msg);
 }
 
 QString MainWindow::render()
 {
-    createFlagLine(); //Call method to create a Flag line
+    //Call method to create a Flag line
+    createFlagLine();
 
-    pxrD->start(); // Start render in new thread
+    // Start render in new thread
+    pxrD->start();
+
 
     // Show output command line
     QString commandLine = "denoise";
@@ -160,8 +157,9 @@ void MainWindow::on_btn_outDir_clicked()
     {
         ui->lineEdit_outdir->setText(dir);
     }
-    else {
-        ui->lineEdit_outdir->setText("");
+    else
+    {
+        ui->lineEdit_outdir->clear();
     }
 }
 
@@ -307,30 +305,31 @@ void MainWindow::createFlagLine()
     pxrD->setFlagLine(tmpFlag);
 }
 
-void MainWindow::on_actionAbout_triggered()
+void MainWindow::on_actionAboutQT_triggered()
 {
     QMessageBox::aboutQt(this, "About QT");
 }
 
-void MainWindow::on_actionAbout_2_triggered()
+void MainWindow::on_actionAbout_triggered()
 {
-    QString copyright;
-    copyright = "Hyperion Denoising Filter\n";
-    copyright += "Copyright (c) 2014-2017 Walt Disney Animation Studios.\n";
-    copyright += "RenderMan 21.3 version\n\n";
+    QMessageBox about;
 
-    QMessageBox::about(this, "About Denoise UI for Renderman", copyright + "Denoise UI for Renderman\nCreated by André Agenor\nFacebook: @andreagenor");
+    about.setWindowTitle("About Denoise UI for Renderman");
+    about.setTextFormat(Qt::RichText);
+    about.setStandardButtons(QMessageBox::Ok);
+    about.setText("Hyperion Denoising Filter<br/>"
+                  "Copyright (c) 2014-2017 Walt Disney Animation Studios.<br/>"
+                  "RenderMan 21.3 version<br/><br/>"
+                  "Denoise UI for Renderman<br/>"
+                  "Created by André Agenor<br/>"
+                  "Behance: <a href=\"http://www.behance.net/andreagenor\">www.behance.net/andreagenor</a>");
+
+    about.exec();
 }
 
-void MainWindow::on_actionPreferences_2_triggered()
+void MainWindow::on_actionPreferences_triggered()
 {
-
     prefUi->exec();
-}
-
-void MainWindow::on_actionHelp_triggered()
-{
-
 }
 
 QString MainWindow::getFlag_name() const
@@ -388,7 +387,7 @@ int MainWindow::getFlag_Threads() const
     return flag_Threads;
 }
 
-void MainWindow::setFlag_Threads(int value)
+void MainWindow::setFlag_Threads(const int &value)
 {
     flag_Threads = value;
 }
@@ -398,7 +397,7 @@ int MainWindow::getProg() const
     return prog;
 }
 
-void MainWindow::setProg(int value)
+void MainWindow::setProg(const int &value)
 {
     prog = value;
 }
@@ -413,12 +412,7 @@ void MainWindow::setFlag_configFiles(const QStringList &value)
     flag_configFiles = value;
 }
 
-void MainWindow::on_pushButton_clicked()
-{
-    close();
-}
-
-void MainWindow::renderStatus(bool arg1)
+void MainWindow::renderStatus(const bool &arg1)
 {
     if(arg1)
     {
@@ -429,8 +423,6 @@ void MainWindow::renderStatus(bool arg1)
         timer->stop();
         ui->progressBar->setValue(100);
     }
-
-    qDebug() << "Status do Processo de render: "<< arg1;
 }
 
 void MainWindow::renderProgress()
@@ -444,10 +436,9 @@ void MainWindow::renderProgress()
     ui->progressBar->setValue(getProg());
 }
 
-void MainWindow::statusBarMsg(QString value)
+void MainWindow::statusBarMsg(const QString &value)
 {
-    QString msg = value;
-    QStringList myList = msg.split("\n", QString::SkipEmptyParts);
+    QStringList myList = value.split("\n", QString::SkipEmptyParts);
     ui->statusBar->showMessage(myList.at(myList.length()-1));
 }
 
@@ -464,9 +455,11 @@ void MainWindow::loadConfigFiles()
         // Load config files to configFiles
         ui->listWidget_configFiles->addItems(myList);
         ui->listWidget_configFiles->setCurrentRow(0);
+        ui->chbox_f->setEnabled(true);
     }
     else
     {
         ui->listWidget_configFiles->clear();
+        ui->chbox_f->setEnabled(false);
     }
 }

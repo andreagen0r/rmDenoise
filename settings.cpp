@@ -11,18 +11,8 @@ Settings *Settings::getInstance()
     return myInstance;
 }
 
-void Settings::setSettings(const QString appPath)
-{
-    QSettings settings("NankinCGI", "Denoise_for_Renderman");
-    settings.beginGroup("Preferences");
-    settings.setValue("ApplicationPath", appPath);
-    settings.endGroup();
-
-    setAppPath(appPath);
-}
-
-void Settings::setSettings(QString appPath, QString configFiles, QString keyRM, QString valRM,
-                            QString keyMaya, QString valMaya, QString keyPath, QString valPath)
+void Settings::setSettings(const QString &appPath, const QString &configFiles, const QString &keyRM, const QString &valRM,
+                           const  QString &keyMaya, const QString &valMaya, const QString &keyPath, const QString &valPath)
 {
     QSettings settings("NankinCGI", "Denoise_for_Renderman");
     settings.beginGroup("Preferences");
@@ -35,7 +25,6 @@ void Settings::setSettings(QString appPath, QString configFiles, QString keyRM, 
     settings.setValue("EnvValueMaya",valMaya);
     settings.setValue("EnvKeyPath",keyPath);
     settings.setValue("EnvValuePath",valPath);
-
     settings.endGroup();
 
     setAppPath(appPath);
@@ -50,30 +39,21 @@ void Settings::setSettings(QString appPath, QString configFiles, QString keyRM, 
 
 QStringList Settings::getSettings()
 {
+    QStringList myList;
+
     QSettings settings("NankinCGI", "Denoise_for_Renderman");
     settings.beginGroup("Preferences");
 
-    QVariant appPath = settings.value("ApplicationPath");
-    QVariant cFiles = settings.value("ConfigFiles");
-    QVariant keyRM = settings.value("EnvKeyRenderman");
-    QVariant vRM = settings.value("EnvValueRenderman");
-    QVariant keyMaya = settings.value("EnvKeyMaya");
-    QVariant vMaya = settings.value("EnvValueMaya");
-    QVariant keyPath = settings.value("EnvKeyPath");
-    QVariant vPath = settings.value("EnvValuePath");
+    setAppPath(settings.value("ApplicationPath"));
+    setConfigFilesPath(settings.value("ConfigFiles"));
+    setEnvKeyRenderman(settings.value("EnvKeyRenderman"));
+    setEnvValueRenderman(settings.value("EnvValueRenderman"));
+    setEnvKeyMaya(settings.value("EnvKeyMaya"));
+    setEnvValueMaya(settings.value("EnvValueMaya"));
+    setEnvKeyPath(settings.value("EnvKeyPath"));
+    setEnvValuePath(settings.value("EnvValuePath"));
+
     settings.endGroup();
-
-    // Seta as variaveis
-    setAppPath(appPath);
-    setConfigFilesPath(cFiles);
-    setEnvKeyRenderman(keyRM);
-    setEnvValueRenderman(vRM);
-    setEnvKeyMaya(keyMaya);
-    setEnvValueMaya(vMaya);
-    setEnvKeyPath(keyPath);
-    setEnvValuePath(vPath);
-
-    QStringList myList;
 
     myList.append(getApplicationPath().toString());
     myList.append(getConfigFilesPath().toString());
@@ -89,16 +69,42 @@ QStringList Settings::getSettings()
 
 QStringList Settings::getDefaultSettings()
 {
+    QSysInfo getOS;
     QStringList myList;
 
-    myList.append("/Applications/Pixar/RenderManProServer-21.3/bin/denoise");
-    myList.append("/Applications/Pixar/RenderManProServer-21.3/lib/denoise");
-    myList.append("RMANTREE");
-    myList.append("/Applications/Pixar/RenderManProServer-21.3");
-    myList.append("RMSTREE");
-    myList.append("/Applications/Pixar/RenderManForMaya-21.3-maya2017");
-    myList.append("PATH");
-    myList.append("${RMANTREE}/bin:${PATH}");
+    if(getOS.productType() == "macos")
+    {
+        myList.append("/Applications/Pixar/RenderManProServer-21.3/bin/denoise");
+        myList.append("/Applications/Pixar/RenderManProServer-21.3/lib/denoise");
+        myList.append("RMANTREE");
+        myList.append("/Applications/Pixar/RenderManProServer-21.3");
+        myList.append("RMSTREE");
+        myList.append("/Applications/Pixar/RenderManForMaya-21.3-maya2017");
+        myList.append("PATH");
+        myList.append("${RMANTREE}/bin:${PATH}");
+    }
+    else if(getOS.productType() == "windows")
+    {
+        myList.append("C:/Program Files/Pixar/RenderManProServer-21.3/bin/denoise.exe");
+        myList.append("C:/Program Files/Pixar/RenderManProServer-21.3/lib/denoise");
+        myList.append("RMANTREE");
+        myList.append("C:/Program Files/Pixar/RenderManProServer-21.3");
+        myList.append("RMSTREE");
+        myList.append("C:/Program Files/Pixar/RenderManForMaya-21.3-maya2017");
+        myList.append("PATH");
+        myList.append("${RMANTREE}/bin:${PATH}");
+    }
+    else // Linux
+    {
+        myList.append("/Applications/Pixar/RenderManProServer-21.3/bin/denoise");
+        myList.append("/Applications/Pixar/RenderManProServer-21.3/lib/denoise");
+        myList.append("RMANTREE");
+        myList.append("/Applications/Pixar/RenderManProServer-21.3");
+        myList.append("RMSTREE");
+        myList.append("/Applications/Pixar/RenderManForMaya-21.3-maya2017");
+        myList.append("PATH");
+        myList.append("${RMANTREE}/bin:${PATH}");
+    }
 
     return myList;
 }
