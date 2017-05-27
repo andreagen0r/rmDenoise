@@ -25,3 +25,7 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
             resource.qrc
+
+# set app icons
+ICON = app.icns
+RC_ICONS = app.ico
