@@ -27,5 +27,5 @@ RESOURCES += \
             resource.qrc
 
 # set app icons
-ICON = app.icns
 RC_ICONS = app.ico
+macx:ICON = $${PWD}/app.icns
