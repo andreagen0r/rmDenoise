@@ -2,18 +2,16 @@
 #define PREFERENCESUI_H
 
 #include <QDialog>
-#include <QDebug>
-#include <QSettings>
-#include <QString>
-#include <QVariant>
+//#include <QSettings>
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QDir>
-#include <QSysInfo>
+//#include <QDir>
 
 #include <QCompleter>
 #include <QDirModel>
+
+#include <QDebug>
 
 #include "settings.h"
 
@@ -37,6 +35,9 @@ private slots:
     void on_toolButton_configFiles_clicked();
     void on_btn_save_clicked();
     void on_btn_loadDefault_clicked();
+    void on_lineEdit_configFiles_editingFinished();
+    void on_lineEdit_appPath_editingFinished();
+    void closeCheck();
     void on_lineEdit_appPath_textChanged(const QString &arg1);
     void on_lineEdit_configFiles_textChanged(const QString &arg1);
     void on_lineEdit_envKeyRenderman_textChanged(const QString &arg1);
@@ -46,23 +47,15 @@ private slots:
     void on_lineEdit_envValueMaya_textChanged(const QString &arg1);
     void on_lineEdit_envValuePath_textChanged(const QString &arg1);
 
-    void on_lineEdit_configFiles_editingFinished();
-
-    void on_lineEdit_appPath_editingFinished();
-
-    void closeCheck();
-
 private:
     Ui::Preferences *ui;
 
-    QCompleter *myCompleter;
+    QCompleter *m_Completer;
 
     void saveSettings();
-    void showSettings(const QStringList &value);
+    void readSettings();
 
-    bool isStateChange() const;
-    void setStateChange(const bool &value);
-    bool stateChange;
+    bool m_isStateChange;
 };
 
 #endif // PREFERENCESUI_H

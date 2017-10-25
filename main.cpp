@@ -5,11 +5,11 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    //set icon to dock
+    //set app icon
    app.setWindowIcon(QIcon(":/icons/app.ico"));
 
-
-    //app.setStyle("windows");
+    // Load style sheet
+//    app.setStyle("windows");
 
 //    QFile file(":/stylesheet.qss");
 //    if(file.open(QIODevice::ReadOnly | QIODevice::Text))

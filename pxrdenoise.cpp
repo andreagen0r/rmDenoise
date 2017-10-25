@@ -15,22 +15,25 @@ void PXRDenoise::run()
 
 void PXRDenoise::renderDenoise()
 {
-    QSysInfo getOS;
     QProcess proc;
     emit renderStatus(true);
 
-    if(getOS.productType() == "macos")
-    {
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
-        env.insert(Settings::getInstance()->getEnvKeyRenderman().toString(), Settings::getInstance()->getEnvValueRenderman().toString());
-        env.insert(Settings::getInstance()->getEnvKeyMaya().toString(), Settings::getInstance()->getEnvValueMaya().toString());
-        env.insert(Settings::getInstance()->getEnvKeyPath().toString(), Settings::getInstance()->getEnvValuePath().toString());
-        proc.setProcessEnvironment(env);
-    }
+#ifdef __APPLE__
+    QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 
+    env.insert(Settings::getInstance().getSettings().value(ENV_KEY_RENDERMAN).toString(),
+               Settings::getInstance().getSettings().value(ENV_VALUE_RENDERMAN).toString());
 
-    proc.start(Settings::getInstance()->getApplicationPath().toString(), getFlagLine());
-    //Wait for execution is completed
+    env.insert(Settings::getInstance().getSettings().value(ENV_KEY_MAYA).toString(),
+               Settings::getInstance().getSettings().value(ENV_VALUE_MAYA).toString());
+
+    env.insert(Settings::getInstance().getSettings().value(ENV_KEY_PATH).toString(),
+               Settings::getInstance().getSettings().value(ENV_VALUE_PATH).toString());
+
+    proc.setProcessEnvironment(env);
+#endif
+
+    proc.start(Settings::getInstance().getSettings().value(APPLICATION_PATH).toString(), getCommandLine());
     proc.waitForFinished(-1);
 
     //Reads standard output
@@ -39,12 +42,12 @@ void PXRDenoise::renderDenoise()
     emit isRenderFinished();
 }
 
-QStringList PXRDenoise::getFlagLine() const
+QStringList PXRDenoise::getCommandLine() const
 {
-    return flagLine;
+    return m_commandLine;
 }
 
-void PXRDenoise::setFlagLine(const QStringList &value)
+void PXRDenoise::setCommandLine(const QStringList &in_value)
 {
-    flagLine = value;
+    m_commandLine = in_value;
 }

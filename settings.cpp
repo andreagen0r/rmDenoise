@@ -1,190 +1,85 @@
 #include "settings.h"
 
-Settings *Settings::myInstance = nullptr;
-
-Settings *Settings::getInstance()
+Settings &Settings::getInstance()
 {
-    if(myInstance == nullptr)
-    {
-        myInstance = new Settings();
-    }
-    return myInstance;
+    static Settings m_instance;
+    return m_instance;
 }
 
-void Settings::setSettings(const QString &appPath, const QString &configFiles, const QString &keyRM, const QString &valRM,
-                           const  QString &keyMaya, const QString &valMaya, const QString &keyPath, const QString &valPath)
+void Settings::setSettings(const QMap<QString, QVariant> &in_value)
 {
-    QSettings settings("NankinCGI", "Denoise_for_Renderman");
-    settings.beginGroup("Preferences");
+    QSettings m_settings(APP_COMPANY, APP_PRODUCT);
+    m_settings.beginGroup(APP_PRODUCT);
 
-    settings.setValue("ApplicationPath", appPath);
-    settings.setValue("ConfigFiles", configFiles);
-    settings.setValue("EnvKeyRenderman", keyRM);
-    settings.setValue("EnvValueRenderman",valRM);
-    settings.setValue("EnvKeyMaya",keyMaya);
-    settings.setValue("EnvValueMaya",valMaya);
-    settings.setValue("EnvKeyPath",keyPath);
-    settings.setValue("EnvValuePath",valPath);
-    settings.endGroup();
+    m_settings.setValue(APPLICATION_PATH, in_value.value("ApplicationPath"));
+    m_settings.setValue("ConfigFiles", in_value.value("ConfigFiles"));
+    m_settings.setValue("EnvKeyRenderman", in_value.value("EnvKeyRenderman"));
+    m_settings.setValue("EnvValueRenderman", in_value.value("EnvValueRenderman"));
+    m_settings.setValue("EnvKeyMaya", in_value.value("EnvKeyMaya"));
+    m_settings.setValue("EnvValueMaya", in_value.value("EnvValueMaya"));
+    m_settings.setValue("EnvKeyPath", in_value.value("EnvKeyPath"));
+    m_settings.setValue("EnvValuePath", in_value.value("EnvValuePath"));
 
-    setAppPath(appPath);
-    setConfigFilesPath(configFiles);
-    setEnvKeyRenderman(keyRM);
-    setEnvValueRenderman(valRM);
-    setEnvKeyMaya(keyMaya);
-    setEnvValueMaya(valMaya);
-    setEnvKeyPath(keyPath);
-    setEnvValuePath(valPath);
+    m_settings.endGroup();
 }
 
-QStringList Settings::getSettings()
+QMap<QString, QVariant> Settings::getSettings() const
 {
-    QStringList myList;
+    QMap<QString, QVariant> myList;
 
-    QSettings settings("NankinCGI", "Denoise_for_Renderman");
-    settings.beginGroup("Preferences");
+    QSettings m_settings(APP_COMPANY, APP_PRODUCT);
+    m_settings.beginGroup(APP_PRODUCT);
 
-    setAppPath(settings.value("ApplicationPath"));
-    setConfigFilesPath(settings.value("ConfigFiles"));
-    setEnvKeyRenderman(settings.value("EnvKeyRenderman"));
-    setEnvValueRenderman(settings.value("EnvValueRenderman"));
-    setEnvKeyMaya(settings.value("EnvKeyMaya"));
-    setEnvValueMaya(settings.value("EnvValueMaya"));
-    setEnvKeyPath(settings.value("EnvKeyPath"));
-    setEnvValuePath(settings.value("EnvValuePath"));
+    myList["ApplicationPath"] = m_settings.value("ApplicationPath").toString();
+    myList["ConfigFiles"] = m_settings.value("ConfigFiles").toString();
+    myList["EnvKeyRenderman"] = m_settings.value("EnvKeyRenderman").toString();
+    myList["EnvValueRenderman"] = m_settings.value("EnvValueRenderman").toString();
+    myList["EnvKeyMaya"] = m_settings.value("EnvKeyMaya").toString();
+    myList["EnvValueMaya"] = m_settings.value("EnvValueMaya").toString();
+    myList["EnvKeyPath"] = m_settings.value("EnvKeyPath").toString();
+    myList["EnvValuePath"] = m_settings.value("EnvValuePath").toString();
 
-    settings.endGroup();
-
-    myList.append(getApplicationPath().toString());
-    myList.append(getConfigFilesPath().toString());
-    myList.append(getEnvKeyRenderman().toString());
-    myList.append(getEnvValueRenderman().toString());
-    myList.append(getEnvKeyMaya().toString());
-    myList.append(getEnvValueMaya().toString());
-    myList.append(getEnvKeyPath().toString());
-    myList.append(getEnvValuePath().toString());
+    m_settings.endGroup();
 
     return myList;
 }
 
-QStringList Settings::getDefaultSettings()
+QMap<QString, QVariant> Settings::getDefaultSettings() const
 {
-    QSysInfo getOS;
-    QStringList myList;
+    QMap<QString, QVariant> myList;
 
-    if(getOS.productType() == "macos")
-    {
-        myList.append("/Applications/Pixar/RenderManProServer-21.3/bin/denoise");
-        myList.append("/Applications/Pixar/RenderManProServer-21.3/lib/denoise");
-        myList.append("RMANTREE");
-        myList.append("/Applications/Pixar/RenderManProServer-21.3");
-        myList.append("RMSTREE");
-        myList.append("/Applications/Pixar/RenderManForMaya-21.3-maya2017");
-        myList.append("PATH");
-        myList.append("${RMANTREE}/bin:${PATH}");
-    }
-    else if(getOS.productType() == "windows")
-    {
-        myList.append("C:/Program Files/Pixar/RenderManProServer-21.3/bin/denoise.exe");
-        myList.append("C:/Program Files/Pixar/RenderManProServer-21.3/lib/denoise");
-        myList.append("RMANTREE");
-        myList.append("C:/Program Files/Pixar/RenderManProServer-21.3");
-        myList.append("RMSTREE");
-        myList.append("C:/Program Files/Pixar/RenderManForMaya-21.3-maya2017");
-        myList.append("PATH");
-        myList.append("${RMANTREE}/bin:${PATH}");
-    }
-    else // Linux
-    {
-        myList.append("/Applications/Pixar/RenderManProServer-21.3/bin/denoise");
-        myList.append("/Applications/Pixar/RenderManProServer-21.3/lib/denoise");
-        myList.append("RMANTREE");
-        myList.append("/Applications/Pixar/RenderManProServer-21.3");
-        myList.append("RMSTREE");
-        myList.append("/Applications/Pixar/RenderManForMaya-21.3-maya2017");
-        myList.append("PATH");
-        myList.append("${RMANTREE}/bin:${PATH}");
-    }
+#ifdef __APPLE__
+    myList["ApplicationPath"] = "/Applications/Pixar/RenderManProServer-21.5/bin/denoise";
+    myList["ConfigFiles"] = "/Applications/Pixar/RenderManProServer-21.5/lib/denoise";
+    myList["EnvKeyRenderman"] = "RMANTREE";
+    myList["EnvValueRenderman"] = "/Applications/Pixar/RenderManProServer-21.5";
+    myList["EnvKeyMaya"] = "RMSTREE";
+    myList["EnvValueMaya"] = "/Applications/Pixar/RenderManForMaya-21.5-maya2017";
+    myList["EnvKeyPath"] = "PATH";
+    myList["EnvValuePath"] = "${RMANTREE}/bin:${PATH}";
+#endif
+
+#ifdef WIN32
+    myList["ApplicationPath"] = "C:/Program Files/Pixar/RenderManProServer-21.5/bin/denoise.exe";
+    myList["ConfigFiles"] = "C:/Program Files/Pixar/RenderManProServer-21.5/lib/denoise";
+    myList["EnvKeyRenderman"] = "RMANTREE";
+    myList["EnvValueRenderman"] = "C:/Program Files/Pixar/RenderManProServer-21.5";
+    myList["EnvKeyMaya"] = "RMSTREE";
+    myList["EnvValueMaya"] = "C:/Program Files/Pixar/RenderManForMaya-21.5-maya2017";
+    myList["EnvKeyPath"] = "PATH";
+    myList["EnvValuePath"] = "${RMANTREE}/bin:${PATH}";
+#endif
+
+#ifdef LINUX
+    myList["ApplicationPath"] = "/Applications/Pixar/RenderManProServer-21.5/bin/denoise";
+    myList["ConfigFiles"] = "/Applications/Pixar/RenderManProServer-21.5/lib/denoise";
+    myList["EnvKeyRenderman"] = "RMANTREE";
+    myList["EnvValueRenderman"] = "/Applications/Pixar/RenderManProServer-21.5";
+    myList["EnvKeyMaya"] = "RMSTREE";
+    myList["EnvValueMaya"] = "/Applications/Pixar/RenderManForMaya-21.5-maya2017";
+    myList["EnvKeyPath"] = "PATH";
+    myList["EnvValuePath"] = "${RMANTREE}/bin:${PATH}";
+#endif
 
     return myList;
-}
-
-QVariant Settings::getApplicationPath() const
-{
-    return applicationPath;
-}
-
-void Settings::setAppPath(const QVariant &value)
-{
-    applicationPath = value;
-}
-
-QVariant Settings::getConfigFilesPath() const
-{
-    return configFilesPath;
-}
-
-void Settings::setConfigFilesPath(const QVariant &value)
-{
-    configFilesPath = value;
-}
-
-QVariant Settings::getEnvKeyRenderman() const
-{
-    return envKeyRenderman;
-}
-
-void Settings::setEnvKeyRenderman(const QVariant &value)
-{
-    envKeyRenderman = value;
-}
-
-QVariant Settings::getEnvValueRenderman() const
-{
-    return envValueRenderman;
-}
-
-void Settings::setEnvValueRenderman(const QVariant &value)
-{
-    envValueRenderman = value;
-}
-
-QVariant Settings::getEnvKeyMaya() const
-{
-    return envKeyMaya;
-}
-
-void Settings::setEnvKeyMaya(const QVariant &value)
-{
-    envKeyMaya = value;
-}
-
-QVariant Settings::getEnvValueMaya() const
-{
-    return envValueMaya;
-}
-
-void Settings::setEnvValueMaya(const QVariant &value)
-{
-    envValueMaya = value;
-}
-
-QVariant Settings::getEnvKeyPath() const
-{
-    return envKeyPath;
-}
-
-void Settings::setEnvKeyPath(const QVariant &value)
-{
-    envKeyPath = value;
-}
-
-QVariant Settings::getEnvValuePath() const
-{
-    return envValuePath;
-}
-
-void Settings::setEnvValuePath(const QVariant &value)
-{
-    envValuePath = value;
 }

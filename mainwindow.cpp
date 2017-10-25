@@ -4,13 +4,26 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    prefUi = new Preferences(this);
-    pxrD = new PXRDenoise;
-    timer = new QTimer(this);
-    utl = new Utils(this);
 
-    connect(prefUi, SIGNAL(preferencesUpdate()), this, SLOT(loadConfigFiles()));
-    emit prefUi->preferencesUpdate();
+    this->setWindowTitle(APP_PRODUCT);
+
+    // Load default settings at first time
+    QSettings m_settings(APP_COMPANY, APP_PRODUCT);
+    m_settings.beginGroup(APP_PRODUCT);
+    if(!m_settings.contains("FirstTime"))
+    {
+        m_settings.setValue("FirstTime", 1);
+        Settings::getInstance().setSettings(Settings::getInstance().getDefaultSettings());
+    }
+    m_settings.endGroup();
+
+    m_prefUi = new Preferences(this);
+    m_pxrDenoise = new PXRDenoise;
+    m_timer = new QTimer(this);
+    m_utl = new Utils(this);
+
+    connect(m_prefUi, &Preferences::preferencesUpdate, this, &MainWindow::loadConfigFiles);
+    emit m_prefUi->preferencesUpdate();
 
     // Verify how many threads there are in the computer and set the max number of threads to the spinBox
     ui->spnBox_threads->setMaximum(QThread::idealThreadCount());
@@ -23,30 +36,28 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->spnBox_threads->setAttribute(Qt::WA_MacShowFocusRect, 0);
 
     // Connect UI elements
-    connect(ui->chbox_o, SIGNAL(toggled(bool)), ui->lineEdit_name, SLOT(setEnabled(bool)));
-    connect(ui->chbox_outdir, SIGNAL(toggled(bool)), ui->lineEdit_outdir, SLOT(setEnabled(bool)));
-    connect(ui->chbox_outdir, SIGNAL(toggled(bool)), ui->btn_outDir, SLOT(setEnabled(bool)));
-    connect(ui->chbox_f, SIGNAL(toggled(bool)), ui->listWidget_configFiles, SLOT(setEnabled(bool)));
-    connect(ui->chbox_crossframe, SIGNAL(toggled(bool)), ui->chbox_skipfirst, SLOT(setEnabled(bool)));
-    connect(ui->chbox_crossframe, SIGNAL(toggled(bool)), ui->chbox_skiplast, SLOT(setEnabled(bool)));
-    connect(ui->chbox_crossframe, SIGNAL(toggled(bool)), ui->chbox_v, SLOT(setEnabled(bool)));
-    connect(ui->chbox_layers, SIGNAL(toggled(bool)), ui->lineEdit_layers, SLOT(setEnabled(bool)));
-    connect(ui->chbox_t, SIGNAL(toggled(bool)), ui->spnBox_threads, SLOT(setEnabled(bool)));
-    connect(ui->chbox_override, SIGNAL(toggled(bool)), ui->lineEdit_override, SLOT(setEnabled(bool)));
+    connect(ui->chbox_o, &QCheckBox::toggled, ui->lineEdit_name, &QLineEdit::setEnabled);
+    connect(ui->chbox_outdir, &QCheckBox::toggled, ui->lineEdit_outdir, &QLineEdit::setEnabled);
+    connect(ui->chbox_outdir, &QCheckBox::toggled, ui->btn_outDir, &QPushButton::setEnabled);
+    connect(ui->chbox_f, &QCheckBox::toggled, ui->listWidget_configFiles, &QListWidget::setEnabled);
+    connect(ui->chbox_crossframe, &QCheckBox::toggled, ui->chbox_skipfirst, &QCheckBox::setEnabled);
+    connect(ui->chbox_crossframe, &QCheckBox::toggled, ui->chbox_skiplast, &QCheckBox::setEnabled);
+    connect(ui->chbox_crossframe, &QCheckBox::toggled, ui->chbox_v, &QCheckBox::setEnabled);
+    connect(ui->chbox_layers, &QCheckBox::toggled, ui->lineEdit_layers, &QLineEdit::setEnabled);
+    connect(ui->chbox_t, &QCheckBox::toggled, ui->spnBox_threads, &QSpinBox::setEnabled);
+    connect(ui->chbox_override, &QCheckBox::toggled, ui->lineEdit_override, &QLineEdit::setEnabled);
+    connect(ui->btn_close, &QPushButton::released, this, &MainWindow::close);
+    connect(m_pxrDenoise, &PXRDenoise::renderStatus, this, &MainWindow::renderStatus);
+    connect(m_pxrDenoise, &PXRDenoise::renderOutputMessage, this, &MainWindow::statusBarMsg);
+    connect(m_timer, &QTimer::timeout, this, &MainWindow::renderProgress);
 
-    connect(ui->btn_close, SIGNAL(released()), this, SLOT(close()));
 
-    connect(pxrD, SIGNAL(renderStatus(bool)), this, SLOT(renderStatus(bool)));
-    connect(timer, SIGNAL(timeout()), this, SLOT(renderProgress()));
-
-    connect(pxrD, SIGNAL(renderOutputMessage(QString)), this, SLOT(statusBarMsg(QString)));
-
-    myCompleter = new QCompleter(this);
-    myCompleter->setModel(new QDirModel(myCompleter));
-    myCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    myCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    ui->lineEdit_imagePath->setCompleter(myCompleter);
-    ui->lineEdit_outdir->setCompleter(myCompleter);
+    m_completer = new QCompleter(this);
+    m_completer->setModel(new QDirModel(m_completer));
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_completer->setCompletionMode(QCompleter::PopupCompletion);
+    ui->lineEdit_imagePath->setCompleter(m_completer);
+    ui->lineEdit_outdir->setCompleter(m_completer);
 }
 
 MainWindow::~MainWindow()
@@ -60,11 +71,11 @@ void MainWindow::on_btn_run_clicked()
 
     if(ui->lineEdit_imagePath->text() != "")
     {
-        if(utl->checkImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+"))))
+        if(m_utl->checkImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+"))))
         {
             if(ui->lineEdit_outdir->isEnabled())
             {
-                if(utl->checkDir(ui->lineEdit_outdir->text()))
+                if(m_utl->checkDir(ui->lineEdit_outdir->text()))
                 {
                     // Render...
                     msg = render();
@@ -82,7 +93,7 @@ void MainWindow::on_btn_run_clicked()
         }
         else
         {
-            QStringList files = utl->notValidImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+")));
+            QStringList files = m_utl->notValidImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+")));
             msg = "Some file(s) don't exist:\n";
             foreach (QString item, files)
             {
@@ -105,12 +116,12 @@ QString MainWindow::render()
     createFlagLine();
 
     // Start render in new thread
-    pxrD->start();
+    m_pxrDenoise->start();
 
 
     // Show output command line
     QString commandLine = "denoise";
-    foreach (QString item, pxrD->getFlagLine())
+    foreach (QString item, m_pxrDenoise->getCommandLine())
     {
         commandLine += " " + item;
     }
@@ -121,9 +132,9 @@ QString MainWindow::render()
 void MainWindow::on_btn_ImagePath_clicked()
 {
     QDir path;
-    if(!getFlag_images().isEmpty())
+    if(!m_flagImages.isEmpty())
     {
-        path = getFlag_images().at(0);
+        path = m_flagImages.at(0);
     }
     else
     {
@@ -131,14 +142,14 @@ void MainWindow::on_btn_ImagePath_clicked()
     }
 
     QStringList fileNames = QFileDialog::getOpenFileNames(this, tr("Open Files"), path.path(), tr("Images (*.exr)"));
-    setFlag_images(fileNames);
+    m_flagImages = fileNames;
     ui->lineEdit_imagePath->setText(fileNames.join(" "));
 }
 
 void MainWindow::on_lineEdit_imagePath_editingFinished()
 {
      ui->lineEdit_imagePath->setText(ui->lineEdit_imagePath->text().simplified());
-     setFlag_images(ui->lineEdit_imagePath->text().split(QRegularExpression("\\s+")));
+     m_flagImages = ui->lineEdit_imagePath->text().split(QRegularExpression("\\s+"));
 }
 
 void MainWindow::on_lineEdit_name_editingFinished()
@@ -149,9 +160,9 @@ void MainWindow::on_lineEdit_name_editingFinished()
 void MainWindow::on_btn_outDir_clicked()
 {
     QDir path;
-    if(!getFlag_images().isEmpty())
+    if(!m_flagImages.isEmpty())
     {
-        path = getFlag_images().at(0);
+        path = m_flagImages.at(0);
     }
     else
     {
@@ -172,7 +183,7 @@ void MainWindow::on_btn_outDir_clicked()
 
 void MainWindow::on_lineEdit_outdir_editingFinished()
 {
-    utl->checkDir(ui->lineEdit_outdir->text().simplified());
+    m_utl->checkDir(ui->lineEdit_outdir->text().simplified());
 }
 
 void MainWindow::on_chbox_crossframe_stateChanged(int arg1)
@@ -194,9 +205,9 @@ void MainWindow::createFlagLine()
     {
         if(ui->lineEdit_name->text() != "")
         {
-            setFlag_name(ui->lineEdit_name->text());
+            m_flagName = ui->lineEdit_name->text();
             tmpFlag.append("-o");
-            tmpFlag.append(getFlag_name());
+            tmpFlag.append(m_flagName);
         }
     }
 
@@ -205,9 +216,9 @@ void MainWindow::createFlagLine()
     {
         if(ui->lineEdit_outdir->text() != "")
         {
-            setFlag_outDir(ui->lineEdit_outdir->text());
+            m_flagOutDir = ui->lineEdit_outdir->text();
             tmpFlag.append("--outdir");
-            tmpFlag.append(getFlag_outDir().path());
+            tmpFlag.append(m_flagOutDir.path());
         }
     }
 
@@ -247,9 +258,9 @@ void MainWindow::createFlagLine()
     {
         if(ui->lineEdit_layers->text() != "")
         {
-            setFlag_layers(ui->lineEdit_layers->text());
+            m_flagLayers = ui->lineEdit_layers->text();
             tmpFlag.append("--layers");
-            tmpFlag.append(getFlag_layers());
+            tmpFlag.append(m_flagLayers);
         }
     }
 
@@ -268,17 +279,17 @@ void MainWindow::createFlagLine()
             mflag.append("-f");
             mflag.append(item);
         }
-        setFlag_configFiles(mflag);
+        m_flagConfigFiles = mflag;
 
-        tmpFlag.append(getFlag_configFiles());
+        tmpFlag.append(m_flagConfigFiles);
     }
 
     // Flag -t (Thread)
     if(ui->chbox_t->isChecked())
     {
-        setFlag_Threads(ui->spnBox_threads->value());
+        m_flagThreads = ui->spnBox_threads->value();
         tmpFlag.append("-t");
-        tmpFlag.append(QString::number(getFlag_Threads()));
+        tmpFlag.append(QString::number(m_flagThreads));
     }
 
     // Flag --override (Override)
@@ -289,18 +300,18 @@ void MainWindow::createFlagLine()
             // Set override
             QRegularExpression exp = QRegularExpression("\\s+(?!\\d+])");
             QStringList myList = ui->lineEdit_override->text().split(exp);
-            setFlag_override(myList);
+            m_flagOverride = myList;
 
             tmpFlag.append("--override");
-            tmpFlag.append(getFlag_override());
+            tmpFlag.append(m_flagOverride);
         }
     }
 
     // Image Path
     if(ui->lineEdit_imagePath->text() != "")
     {
-        setFlag_images(ui->lineEdit_imagePath->text().split(QRegularExpression("\\s+")));
-        tmpFlag.append(getFlag_images());
+        m_flagImages = ui->lineEdit_imagePath->text().split(QRegularExpression("\\s+"));
+        tmpFlag.append(m_flagImages);
     }
 
     // Flag -n (Output basename)
@@ -309,7 +320,7 @@ void MainWindow::createFlagLine()
         tmpFlag.append("-n");
     }
 
-    pxrD->setFlagLine(tmpFlag);
+    m_pxrDenoise->setCommandLine(tmpFlag);
 }
 
 void MainWindow::on_actionAboutQT_triggered()
@@ -319,128 +330,65 @@ void MainWindow::on_actionAboutQT_triggered()
 
 void MainWindow::on_actionAbout_triggered()
 {
-    QMessageBox about;
+    QString aboutCaption;
+    aboutCaption = QMessageBox::tr("<h3>About %1</h3>"
+                                   "<p>Version %2</p>").arg(APP_PRODUCT, APP_VERSION);
+    QString AboutBodyText;
+    AboutBodyText = QMessageBox::tr(
+                "<p>%1 is a Graphic User Interface for Renderman Denoise Tool.<br>"
+                "<p>Hyperion Denoising Filter <br>"
+                "Copyright (c) 2014-2017 Walt Disney Animation Studios. <br>"
+                "For more information about Renderman and denoise filter visit <a href=\"http://%2\">%2</a><br>"
+                "<p>Created by André Agenor <a href=\"http://%3\">%3</a>.<br>"
+                "Windows version deployed by Arleson Tonera.<br>"
+                "Visit the <a href=\"http://%4/andreagen0r/rmDenoise\">%4</a> for the source code.</p>"
+                "All rights reserved to your respective owners.</p>"
+                ).arg((APP_PRODUCT),
+                      QStringLiteral("renderman.pixar.com"),
+                      QStringLiteral("andreagenor.com"),
+                      QStringLiteral("github.com"));
 
-    about.setWindowTitle("About Denoise UI for Renderman");
-    about.setTextFormat(Qt::RichText);
-    about.setStandardButtons(QMessageBox::Ok);
-    about.setText("Hyperion Denoising Filter<br/>"
-                  "Copyright (c) 2014-2017 Walt Disney Animation Studios.<br/>"
-                  "RenderMan 21.3 version<br/><br/>"
-                  "Denoise UI for Renderman<br/>"
-                  "Created by André Agenor<br/>"
-                  "Behance: <a href=\"http://www.behance.net/andreagenor\">www.behance.net/andreagenor</a>");
+    QMessageBox msgBox;
+    msgBox.setWindowTitle(tr("About %1").arg(APP_PRODUCT));
+    msgBox.setText(aboutCaption);
+    msgBox.setInformativeText(AboutBodyText);
 
-    about.exec();
+    QPixmap pm(QLatin1String(":/app-64.png"));
+    if (!pm.isNull())
+    {
+        msgBox.setIconPixmap(pm);
+    }
+
+    msgBox.exec();
 }
 
 void MainWindow::on_actionPreferences_triggered()
 {
-    prefUi->exec();
-}
-
-QString MainWindow::getFlag_name() const
-{
-    return flag_name;
-}
-
-void MainWindow::setFlag_name(const QString &value)
-{
-    flag_name = value;
-}
-
-QDir MainWindow::getFlag_outDir() const
-{
-    return flag_outDir;
-}
-
-void MainWindow::setFlag_outDir(const QDir &value)
-{
-    flag_outDir = value;
-}
-
-QStringList MainWindow::getFlag_images() const
-{
-    return flag_images;
-}
-
-void MainWindow::setFlag_images(const QStringList &value)
-{
-    flag_images = value;
-}
-
-QString MainWindow::getFlag_layers() const
-{
-    return flag_layers;
-}
-
-void MainWindow::setFlag_layers(const QString &value)
-{
-    flag_layers = value;
-}
-
-QStringList MainWindow::getFlag_override() const
-{
-    return flag_override;
-}
-
-void MainWindow::setFlag_override(const QStringList &value)
-{
-    flag_override = value;
-}
-
-int MainWindow::getFlag_Threads() const
-{
-    return flag_Threads;
-}
-
-void MainWindow::setFlag_Threads(const int &value)
-{
-    flag_Threads = value;
-}
-
-int MainWindow::getProg() const
-{
-    return prog;
-}
-
-void MainWindow::setProg(const int &value)
-{
-    prog = value;
-}
-
-QStringList MainWindow::getFlag_configFiles() const
-{
-    return flag_configFiles;
-}
-
-void MainWindow::setFlag_configFiles(const QStringList &value)
-{
-    flag_configFiles = value;
+    m_prefUi->exec();
 }
 
 void MainWindow::renderStatus(const bool &arg1)
 {
     if(arg1)
     {
-        timer->start(10);
+        m_timer->start(10);
     }
     else
     {
-        timer->stop();
+        m_timer->stop();
         ui->progressBar->setValue(100);
     }
 }
 
 void MainWindow::renderProgress()
 {
-    setProg(getProg()+1);
-    if(getProg() >= 100)
+    m_progress += 1;
+    if(m_progress >= 100)
     {
-        setProg(0);
+        m_progress = 0;
     }
 
-    ui->progressBar->setValue(getProg());
+    ui->progressBar->setValue(m_progress);
 }
 
 void MainWindow::statusBarMsg(const QString &value)
@@ -451,7 +399,7 @@ void MainWindow::statusBarMsg(const QString &value)
 
 void MainWindow::loadConfigFiles()
 {
-    QDir configFiles(Settings::getInstance()->getConfigFilesPath().toString());
+    QDir configFiles(Settings::getInstance().getSettings().value("ConfigFiles").toString());
     configFiles.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     QStringList fileFilters;
     fileFilters.append("*.json"); // Filter to only read *.json files

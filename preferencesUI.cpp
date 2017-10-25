@@ -1,26 +1,24 @@
 #include "preferencesUI.h"
 #include "ui_preferencesUI.h"
 
-Preferences::Preferences(QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::Preferences)
+Preferences::Preferences(QWidget *parent) : QDialog(parent), ui(new Ui::Preferences)
 {
     ui->setupUi(this);
 
-    showSettings(Settings::getInstance()->getSettings());
-    setStateChange(false);
+    readSettings();
+    m_isStateChange = false;
 
-    connect(ui->btn_close, SIGNAL(released()), this, SLOT(closeCheck()));
-    connect(this, SIGNAL(finished(int)), ui->btn_close, SLOT(click()));
+    connect(ui->btn_close, &QPushButton::released, this, &Preferences::closeCheck);
+    connect(this, &Preferences::finished, ui->btn_close, &QPushButton::click);
 
-    myCompleter = new QCompleter(this);
-    myCompleter->setModel(new QDirModel(myCompleter));
-    myCompleter->setCaseSensitivity(Qt::CaseInsensitive);
-    myCompleter->setCompletionMode(QCompleter::PopupCompletion);
-    ui->lineEdit_appPath->setCompleter(myCompleter);
-    ui->lineEdit_configFiles->setCompleter(myCompleter);
-    ui->lineEdit_envValueMaya->setCompleter(myCompleter);
-    ui->lineEdit_envValueRenderman->setCompleter(myCompleter);
+    m_Completer = new QCompleter(this);
+    m_Completer->setModel(new QDirModel(m_Completer));
+    m_Completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_Completer->setCompletionMode(QCompleter::PopupCompletion);
+    ui->lineEdit_appPath->setCompleter(m_Completer);
+    ui->lineEdit_configFiles->setCompleter(m_Completer);
+    ui->lineEdit_envValueMaya->setCompleter(m_Completer);
+    ui->lineEdit_envValueRenderman->setCompleter(m_Completer);
 }
 
 Preferences::~Preferences()
@@ -30,19 +28,15 @@ Preferences::~Preferences()
 
 void Preferences::on_toolButton_appPath_clicked()
 {
-    QSysInfo getOS;
     QFileInfo myExecFile;
 
-    // If OS is MacOS go to Applications folder otherwise go to OS homePath
-    if(getOS.productType() == "macos")
-    {
-        myExecFile = QFileDialog::getOpenFileName(this, tr("Open Files"),QDir::rootPath() + "/Applications", tr("Unix executable (denoise)"));
-    }
-    else
-    {
-        myExecFile = QFileDialog::getOpenFileName(this, tr("Open Files"),QDir::homePath(), tr("Executable file (denoise denoise.exe)"));
-    }
-
+#ifdef __APPLE__
+    myExecFile = QFileDialog::getOpenFileName(this, tr("Open Files"), QDir::rootPath() +
+                                              "/Applications/Pixar/", tr("Unix executable (denoise)"));
+#else
+    myExecFile = QFileDialog::getOpenFileName(this, tr("Open Files"), QDir::homePath(),
+                                              tr("Executable file (denoise denoise.exe)"));
+#endif
 
     if(myExecFile.isExecutable())
     {
@@ -53,69 +47,83 @@ void Preferences::on_toolButton_appPath_clicked()
         QMessageBox::warning(this, "Warning!", "The selected file is not an executable file.");
     }
 
-    if(myExecFile.absoluteFilePath() != Settings::getInstance()->getApplicationPath().toString())
+    if(myExecFile.absoluteFilePath() != Settings::getInstance().getSettings().value(APPLICATION_PATH).toString())
     {
-        setStateChange(true);
+        m_isStateChange = true;
     }
 }
 
 void Preferences::on_toolButton_configFiles_clicked()
 {
-    QSysInfo getOS;
     QDir myDir;
 
-    // If OS is MacOS go to Applications folder otherwise go to OS Home
-    if(getOS.productType() == "macos")
-    {
-        myDir = QFileDialog::getExistingDirectory(this, "Open Directory", QDir::rootPath() + "/Applications", QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    }
-    else
-    {
-        myDir = QFileDialog::getExistingDirectory(this, "Open Directory", QDir::homePath(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
-    }
+#ifdef __APPLE__
+    myDir = QFileDialog::getExistingDirectory(this, "Open Directory", QDir::rootPath() + "/Applications/Pixar",
+                                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+#else
+    myDir = QFileDialog::getExistingDirectory(this, "Open Directory", QDir::homePath(),
+                                              QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+#endif
+
 
     if(myDir.exists())
     {
         ui->lineEdit_configFiles->setText(myDir.absolutePath());
-        setStateChange(true);
+        m_isStateChange = true;
     }
 }
 
 void Preferences::on_btn_save_clicked()
 {
     saveSettings();
-    setStateChange(false);
+    m_isStateChange = false;
 }
 
 void Preferences::saveSettings()
 {
-    Settings::getInstance()->setSettings(ui->lineEdit_appPath->text().simplified(),
-                                          ui->lineEdit_configFiles->text().simplified(),
-                                          ui->lineEdit_envKeyRenderman->text().simplified(),
-                                          ui->lineEdit_envValueRenderman->text().simplified(),
-                                          ui->lineEdit_envKeyMaya->text().simplified(),
-                                          ui->lineEdit_envValueMaya->text().simplified(),
-                                          ui->lineEdit_envKeyPath->text().simplified(),
-                                          ui->lineEdit_envValuePath->text().simplified() );
+    QMap<QString, QVariant> m_map;
 
+    m_map[APPLICATION_PATH] = ui->lineEdit_appPath->text().simplified();
+    m_map[CONFIG_FILES] = ui->lineEdit_configFiles->text().simplified();
+    m_map[ENV_KEY_RENDERMAN] = ui->lineEdit_envKeyRenderman->text().simplified();
+    m_map[ENV_VALUE_RENDERMAN] = ui->lineEdit_envValueRenderman->text().simplified();
+    m_map[ENV_KEY_MAYA] = ui->lineEdit_envKeyMaya->text().simplified();
+    m_map[ENV_VALUE_MAYA] = ui->lineEdit_envValueMaya->text().simplified();
+    m_map[ENV_KEY_PATH] = ui->lineEdit_envKeyPath->text().simplified();
+    m_map[ENV_VALUE_PATH] = ui->lineEdit_envValuePath->text().simplified();
+
+    Settings::getInstance().setSettings(m_map);
 }
 
-void Preferences::showSettings(const QStringList &value)
+void Preferences::readSettings()
 {
-    ui->lineEdit_appPath->setText(value.at(0));
-    ui->lineEdit_configFiles->setText(value.at(1));
-    ui->lineEdit_envKeyRenderman->setText(value.at(2));
-    ui->lineEdit_envValueRenderman->setText(value.at(3));
-    ui->lineEdit_envKeyMaya->setText(value.at(4));
-    ui->lineEdit_envValueMaya->setText(value.at(5));
-    ui->lineEdit_envKeyPath->setText(value.at(6));
-    ui->lineEdit_envValuePath->setText(value.at(7));
+    QSettings m_settings(APP_COMPANY, APP_PRODUCT);
+    m_settings.beginGroup(APP_PRODUCT);
+
+    ui->lineEdit_appPath->setText(m_settings.value(APPLICATION_PATH).toString());
+    ui->lineEdit_configFiles->setText(m_settings.value(CONFIG_FILES).toString());
+    ui->lineEdit_envKeyRenderman->setText(m_settings.value(ENV_KEY_RENDERMAN).toString());
+    ui->lineEdit_envValueRenderman->setText(m_settings.value(ENV_VALUE_RENDERMAN).toString());
+    ui->lineEdit_envKeyMaya->setText(m_settings.value(ENV_KEY_MAYA).toString());
+    ui->lineEdit_envValueMaya->setText(m_settings.value(ENV_VALUE_MAYA).toString());
+    ui->lineEdit_envKeyPath->setText(m_settings.value(ENV_KEY_PATH).toString());
+    ui->lineEdit_envValuePath->setText(m_settings.value(ENV_VALUE_PATH).toString());
+
+    m_settings.endGroup();
 }
 
 void Preferences::on_btn_loadDefault_clicked()
 {
-    showSettings(Settings::getInstance()->getDefaultSettings());
-    setStateChange(true);
+    ui->lineEdit_appPath->setText(Settings::getInstance().getDefaultSettings().value(APPLICATION_PATH).toString());
+    ui->lineEdit_configFiles->setText(Settings::getInstance().getDefaultSettings().value(CONFIG_FILES).toString());
+    ui->lineEdit_envKeyRenderman->setText(Settings::getInstance().getDefaultSettings().value(ENV_KEY_RENDERMAN).toString());
+    ui->lineEdit_envValueRenderman->setText(Settings::getInstance().getDefaultSettings().value(ENV_VALUE_RENDERMAN).toString());
+    ui->lineEdit_envKeyMaya->setText(Settings::getInstance().getDefaultSettings().value(ENV_KEY_MAYA).toString());
+    ui->lineEdit_envValueMaya->setText(Settings::getInstance().getDefaultSettings().value(ENV_VALUE_MAYA).toString());
+    ui->lineEdit_envKeyPath->setText(Settings::getInstance().getDefaultSettings().value(ENV_KEY_PATH).toString());
+    ui->lineEdit_envValuePath->setText(Settings::getInstance().getDefaultSettings().value(ENV_VALUE_PATH).toString());
+
+    m_isStateChange = true;
 }
 
 void Preferences::on_lineEdit_appPath_editingFinished()
@@ -127,25 +135,20 @@ void Preferences::on_lineEdit_appPath_editingFinished()
         if(file.isExecutable())
         {
             //qDebug() << "This is a executable file";
-            if(ui->lineEdit_appPath->text() == Settings::getInstance()->getApplicationPath().toString())
-            {
-                setStateChange(false);
-            }
-            else
-            {
-                setStateChange(true);
-            }
+            m_isStateChange = (ui->lineEdit_appPath->text() ==
+                               Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
         }
         else
         {
             //qDebug() << "This is not an executable file";
-            ui->lineEdit_appPath->setText(Settings::getInstance()->getApplicationPath().toString());
+            ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
         }
     }
     else
     {
-        QMessageBox::warning(this, "Warning!", QString("The selected file: \n" + ui->lineEdit_appPath->text() + "\n is not an acceptable file."));
-        ui->lineEdit_appPath->setText(Settings::getInstance()->getApplicationPath().toString());
+        QMessageBox::warning(this, "Warning!", QString("The selected file: \n" + ui->lineEdit_appPath->text()
+                                                       + "\n is not an acceptable file."));
+        ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
     }
 }
 
@@ -156,20 +159,22 @@ void Preferences::on_lineEdit_configFiles_editingFinished()
     if(!directory.exists())
     {
         QMessageBox::warning(this, "Warning!", "The directory selected does not exist!");
-        ui->lineEdit_configFiles->setText(Settings::getInstance()->getConfigFilesPath().toString());
+        ui->lineEdit_configFiles->setText(Settings::getInstance().getSettings().value(CONFIG_FILES).toString());
     }
 }
 
 void Preferences::closeCheck()
 {
-    if(isStateChange() == true)
+    qDebug() << "antes de fechar: " << m_isStateChange;
+
+    if(m_isStateChange)
     {
         QMessageBox::StandardButton msg;
-        msg = QMessageBox::question(this, "Settings Change", "Your setting change, do you want save new setting?", QMessageBox::Yes | QMessageBox::No);
+        msg = QMessageBox::question(this, "Settings Change", "Your setting change, do you want save new setting?",
+                                    QMessageBox::Yes | QMessageBox::No);
 
         switch (msg) {
         case QMessageBox::Yes:
-            // saveSettings
             saveSettings();
             break;
         default:
@@ -178,112 +183,46 @@ void Preferences::closeCheck()
     }
 
     emit preferencesUpdate();
-    setStateChange(false);
+    m_isStateChange = false;
     close();
 }
 
 void Preferences::on_lineEdit_appPath_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getApplicationPath().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
 }
 
 void Preferences::on_lineEdit_configFiles_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getConfigFilesPath().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(CONFIG_FILES).toString());
 }
 
 void Preferences::on_lineEdit_envKeyRenderman_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getEnvKeyRenderman().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_KEY_RENDERMAN).toString());
 }
 
 void Preferences::on_lineEdit_envValueRenderman_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getEnvValueRenderman().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_VALUE_RENDERMAN).toString());
 }
 
 void Preferences::on_lineEdit_envKeyMaya_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getEnvKeyMaya().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_KEY_MAYA).toString());
 }
 
 void Preferences::on_lineEdit_envValueMaya_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getEnvValueMaya().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_VALUE_MAYA).toString());
 }
 
 void Preferences::on_lineEdit_envKeyPath_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getEnvKeyPath().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_KEY_PATH).toString());
 }
 
 void Preferences::on_lineEdit_envValuePath_textChanged(const QString &arg1)
 {
-    if(arg1 == Settings::getInstance()->getEnvValuePath().toString())
-    {
-        setStateChange(false);
-    }
-    else
-    {
-        setStateChange(true);
-    }
-}
-
-bool Preferences::isStateChange() const
-{
-    return stateChange;
-}
-
-void Preferences::setStateChange(const bool &value)
-{
-    stateChange = value;
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_VALUE_PATH).toString());
 }

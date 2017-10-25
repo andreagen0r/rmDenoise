@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
         <file>stylesheet.qss</file>
+        <file>app-64.png</file>
     </qresource>
 </RCC>

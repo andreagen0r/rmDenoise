@@ -1,14 +1,11 @@
 #ifndef PXRDENOISE_H
 #define PXRDENOISE_H
 
-#include <iostream>
-#include <QString>
 #include <QStringList>
 #include <QProcess>
-#include <QDir>
 #include <QThread>
 #include <QMutex>
-#include <QSysInfo>
+
 #include "settings.h"
 
 class PXRDenoise : public QThread
@@ -20,18 +17,18 @@ public:
 
     void run();
 
-    QStringList getFlagLine() const;
-    void setFlagLine(const QStringList &value);
-
-private:
-    void renderDenoise();
-
-    QStringList flagLine;
+    QStringList getCommandLine() const;
+    void setCommandLine(const QStringList &in_value);
 
 signals:
     void renderOutputMessage(QString);
     void renderStatus(bool);
     void isRenderFinished();
+
+private:
+    void renderDenoise();
+
+    QStringList m_commandLine;
 };
 
 #endif // PXRDENOISE_H

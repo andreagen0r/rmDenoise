@@ -8,7 +8,6 @@
 #include <QThread>
 #include <QDebug>
 #include <QMessageBox>
-#include <iostream>
 #include <QRegularExpression>
 #include <QProgressDialog>
 #include <QTimer>
@@ -53,49 +52,25 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Preferences *prefUi;
-    PXRDenoise *pxrD;
-    QTimer *timer;
-    Utils *utl;
+    Preferences *m_prefUi;
+    PXRDenoise *m_pxrDenoise;
+    QTimer *m_timer;
+    Utils *m_utl;
 
-    QCompleter *myCompleter;
+    QCompleter *m_completer;
 
     QString render();
     void createFlagLine();
 
-    QString getFlag_name() const;
-    void setFlag_name(const QString &value);
 
-    QDir getFlag_outDir() const;
-    void setFlag_outDir(const QDir &value);
-
-    QStringList getFlag_images() const;
-    void setFlag_images(const QStringList &value);
-
-    QString getFlag_layers() const;
-    void setFlag_layers(const QString &value);
-
-    QStringList getFlag_override() const;
-    void setFlag_override(const QStringList &value);
-
-    QStringList getFlag_configFiles() const;
-    void setFlag_configFiles(const QStringList &value);
-
-    int getFlag_Threads() const;
-    void setFlag_Threads(const int &value);
-
-    int getProg() const;
-    void setProg(const int &value = 0);
-
-    QString flag_name;
-    QDir flag_outDir;
-    QString flag_layers;
-    QStringList flag_override;
-    QStringList flag_images;
-    QStringList flag_configFiles;
-    int flag_Threads;
-
-    int prog;
+    QString m_flagName;
+    QDir m_flagOutDir;
+    QString m_flagLayers;
+    QStringList m_flagOverride;
+    QStringList m_flagImages;
+    QStringList m_flagConfigFiles;
+    int m_flagThreads;
+    int m_progress;
 
 };
 
