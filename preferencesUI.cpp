@@ -47,7 +47,8 @@ void Preferences::on_toolButton_appPath_clicked()
         QMessageBox::warning(this, "Warning!", "The selected file is not an executable file.");
     }
 
-    if(myExecFile.absoluteFilePath() != Settings::getInstance().getSettings().value(APPLICATION_PATH).toString())
+    if(myExecFile.absoluteFilePath() != Settings::getInstance().getSettings().value(
+                Settings::getInstance().APPLICATION_PATH).toString())
     {
         m_isStateChange = true;
     }
@@ -83,14 +84,14 @@ void Preferences::saveSettings()
 {
     QMap<QString, QVariant> m_map;
 
-    m_map[APPLICATION_PATH] = ui->lineEdit_appPath->text().simplified();
-    m_map[CONFIG_FILES] = ui->lineEdit_configFiles->text().simplified();
-    m_map[ENV_KEY_RENDERMAN] = ui->lineEdit_envKeyRenderman->text().simplified();
-    m_map[ENV_VALUE_RENDERMAN] = ui->lineEdit_envValueRenderman->text().simplified();
-    m_map[ENV_KEY_MAYA] = ui->lineEdit_envKeyMaya->text().simplified();
-    m_map[ENV_VALUE_MAYA] = ui->lineEdit_envValueMaya->text().simplified();
-    m_map[ENV_KEY_PATH] = ui->lineEdit_envKeyPath->text().simplified();
-    m_map[ENV_VALUE_PATH] = ui->lineEdit_envValuePath->text().simplified();
+    m_map[Settings::getInstance().APPLICATION_PATH] = ui->lineEdit_appPath->text().simplified();
+    m_map[Settings::getInstance().CONFIG_FILES] = ui->lineEdit_configFiles->text().simplified();
+    m_map[Settings::getInstance().ENV_KEY_RENDERMAN] = ui->lineEdit_envKeyRenderman->text().simplified();
+    m_map[Settings::getInstance().ENV_VALUE_RENDERMAN] = ui->lineEdit_envValueRenderman->text().simplified();
+    m_map[Settings::getInstance().ENV_KEY_MAYA] = ui->lineEdit_envKeyMaya->text().simplified();
+    m_map[Settings::getInstance().ENV_VALUE_MAYA] = ui->lineEdit_envValueMaya->text().simplified();
+    m_map[Settings::getInstance().ENV_KEY_PATH] = ui->lineEdit_envKeyPath->text().simplified();
+    m_map[Settings::getInstance().ENV_VALUE_PATH] = ui->lineEdit_envValuePath->text().simplified();
 
     Settings::getInstance().setSettings(m_map);
 }
@@ -100,28 +101,43 @@ void Preferences::readSettings()
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    ui->lineEdit_appPath->setText(m_settings.value(APPLICATION_PATH).toString());
-    ui->lineEdit_configFiles->setText(m_settings.value(CONFIG_FILES).toString());
-    ui->lineEdit_envKeyRenderman->setText(m_settings.value(ENV_KEY_RENDERMAN).toString());
-    ui->lineEdit_envValueRenderman->setText(m_settings.value(ENV_VALUE_RENDERMAN).toString());
-    ui->lineEdit_envKeyMaya->setText(m_settings.value(ENV_KEY_MAYA).toString());
-    ui->lineEdit_envValueMaya->setText(m_settings.value(ENV_VALUE_MAYA).toString());
-    ui->lineEdit_envKeyPath->setText(m_settings.value(ENV_KEY_PATH).toString());
-    ui->lineEdit_envValuePath->setText(m_settings.value(ENV_VALUE_PATH).toString());
+    ui->lineEdit_appPath->setText(m_settings.value(Settings::getInstance().APPLICATION_PATH).toString());
+    ui->lineEdit_configFiles->setText(m_settings.value(Settings::getInstance().CONFIG_FILES).toString());
+    ui->lineEdit_envKeyRenderman->setText(m_settings.value(Settings::getInstance().ENV_KEY_RENDERMAN).toString());
+    ui->lineEdit_envValueRenderman->setText(m_settings.value(Settings::getInstance().ENV_VALUE_RENDERMAN).toString());
+    ui->lineEdit_envKeyMaya->setText(m_settings.value(Settings::getInstance().ENV_KEY_MAYA).toString());
+    ui->lineEdit_envValueMaya->setText(m_settings.value(Settings::getInstance().ENV_VALUE_MAYA).toString());
+    ui->lineEdit_envKeyPath->setText(m_settings.value(Settings::getInstance().ENV_KEY_PATH).toString());
+    ui->lineEdit_envValuePath->setText(m_settings.value(Settings::getInstance().ENV_VALUE_PATH).toString());
 
     m_settings.endGroup();
 }
 
 void Preferences::on_btn_loadDefault_clicked()
 {
-    ui->lineEdit_appPath->setText(Settings::getInstance().getDefaultSettings().value(APPLICATION_PATH).toString());
-    ui->lineEdit_configFiles->setText(Settings::getInstance().getDefaultSettings().value(CONFIG_FILES).toString());
-    ui->lineEdit_envKeyRenderman->setText(Settings::getInstance().getDefaultSettings().value(ENV_KEY_RENDERMAN).toString());
-    ui->lineEdit_envValueRenderman->setText(Settings::getInstance().getDefaultSettings().value(ENV_VALUE_RENDERMAN).toString());
-    ui->lineEdit_envKeyMaya->setText(Settings::getInstance().getDefaultSettings().value(ENV_KEY_MAYA).toString());
-    ui->lineEdit_envValueMaya->setText(Settings::getInstance().getDefaultSettings().value(ENV_VALUE_MAYA).toString());
-    ui->lineEdit_envKeyPath->setText(Settings::getInstance().getDefaultSettings().value(ENV_KEY_PATH).toString());
-    ui->lineEdit_envValuePath->setText(Settings::getInstance().getDefaultSettings().value(ENV_VALUE_PATH).toString());
+    ui->lineEdit_appPath->setText(Settings::getInstance().getDefaultSettings().value(
+                                      Settings::getInstance().APPLICATION_PATH).toString());
+
+    ui->lineEdit_configFiles->setText(Settings::getInstance().getDefaultSettings().value(
+                                          Settings::getInstance().CONFIG_FILES).toString());
+
+    ui->lineEdit_envKeyRenderman->setText(Settings::getInstance().getDefaultSettings().value(
+                                              Settings::getInstance().ENV_KEY_RENDERMAN).toString());
+
+    ui->lineEdit_envValueRenderman->setText(Settings::getInstance().getDefaultSettings().value(
+                                                Settings::getInstance().ENV_VALUE_RENDERMAN).toString());
+
+    ui->lineEdit_envKeyMaya->setText(Settings::getInstance().getDefaultSettings().value(
+                                         Settings::getInstance().ENV_KEY_MAYA).toString());
+
+    ui->lineEdit_envValueMaya->setText(Settings::getInstance().getDefaultSettings().value(
+                                           Settings::getInstance().ENV_VALUE_MAYA).toString());
+
+    ui->lineEdit_envKeyPath->setText(Settings::getInstance().getDefaultSettings().value(
+                                         Settings::getInstance().ENV_KEY_PATH).toString());
+
+    ui->lineEdit_envValuePath->setText(Settings::getInstance().getDefaultSettings().value(
+                                           Settings::getInstance().ENV_VALUE_PATH).toString());
 
     m_isStateChange = true;
 }
@@ -136,19 +152,22 @@ void Preferences::on_lineEdit_appPath_editingFinished()
         {
             //qDebug() << "This is a executable file";
             m_isStateChange = (ui->lineEdit_appPath->text() ==
-                               Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
+                               Settings::getInstance().getSettings().value(
+                                   Settings::getInstance().APPLICATION_PATH).toString());
         }
         else
         {
             //qDebug() << "This is not an executable file";
-            ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
+            ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(
+                                              Settings::getInstance().APPLICATION_PATH).toString());
         }
     }
     else
     {
         QMessageBox::warning(this, "Warning!", QString("The selected file: \n" + ui->lineEdit_appPath->text()
                                                        + "\n is not an acceptable file."));
-        ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
+        ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(
+                                          Settings::getInstance().APPLICATION_PATH).toString());
     }
 }
 
@@ -159,7 +178,8 @@ void Preferences::on_lineEdit_configFiles_editingFinished()
     if(!directory.exists())
     {
         QMessageBox::warning(this, "Warning!", "The directory selected does not exist!");
-        ui->lineEdit_configFiles->setText(Settings::getInstance().getSettings().value(CONFIG_FILES).toString());
+        ui->lineEdit_configFiles->setText(Settings::getInstance().getSettings().value(Settings::getInstance().
+                                                                                      CONFIG_FILES).toString());
     }
 }
 
@@ -189,40 +209,48 @@ void Preferences::closeCheck()
 
 void Preferences::on_lineEdit_appPath_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(APPLICATION_PATH).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().APPLICATION_PATH).toString());
 }
 
 void Preferences::on_lineEdit_configFiles_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(CONFIG_FILES).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().CONFIG_FILES).toString());
 }
 
 void Preferences::on_lineEdit_envKeyRenderman_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_KEY_RENDERMAN).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().ENV_KEY_RENDERMAN).toString());
 }
 
 void Preferences::on_lineEdit_envValueRenderman_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_VALUE_RENDERMAN).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().ENV_VALUE_RENDERMAN).toString());
 }
 
 void Preferences::on_lineEdit_envKeyMaya_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_KEY_MAYA).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().ENV_KEY_MAYA).toString());
 }
 
 void Preferences::on_lineEdit_envValueMaya_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_VALUE_MAYA).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().ENV_VALUE_MAYA).toString());
 }
 
 void Preferences::on_lineEdit_envKeyPath_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_KEY_PATH).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().ENV_KEY_PATH).toString());
 }
 
 void Preferences::on_lineEdit_envValuePath_textChanged(const QString &arg1)
 {
-    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(ENV_VALUE_PATH).toString());
+    m_isStateChange = (arg1 == Settings::getInstance().getSettings().value(
+                           Settings::getInstance().ENV_VALUE_PATH).toString());
 }

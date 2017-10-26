@@ -11,75 +11,82 @@ void Settings::setSettings(const QMap<QString, QVariant> &in_value)
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    m_settings.setValue(APPLICATION_PATH, in_value.value("ApplicationPath"));
-    m_settings.setValue("ConfigFiles", in_value.value("ConfigFiles"));
-    m_settings.setValue("EnvKeyRenderman", in_value.value("EnvKeyRenderman"));
-    m_settings.setValue("EnvValueRenderman", in_value.value("EnvValueRenderman"));
-    m_settings.setValue("EnvKeyMaya", in_value.value("EnvKeyMaya"));
-    m_settings.setValue("EnvValueMaya", in_value.value("EnvValueMaya"));
-    m_settings.setValue("EnvKeyPath", in_value.value("EnvKeyPath"));
-    m_settings.setValue("EnvValuePath", in_value.value("EnvValuePath"));
+    m_settings.setValue(APPLICATION_PATH, in_value.value(APPLICATION_PATH));
+    m_settings.setValue(CONFIG_FILES, in_value.value(CONFIG_FILES));
+    m_settings.setValue(ENV_KEY_RENDERMAN, in_value.value(ENV_KEY_RENDERMAN));
+    m_settings.setValue(ENV_VALUE_RENDERMAN, in_value.value(ENV_VALUE_RENDERMAN));
+    m_settings.setValue(ENV_KEY_MAYA, in_value.value(ENV_KEY_MAYA));
+    m_settings.setValue(ENV_VALUE_MAYA, in_value.value(ENV_VALUE_MAYA));
+    m_settings.setValue(ENV_KEY_PATH, in_value.value(ENV_KEY_PATH));
+    m_settings.setValue(ENV_VALUE_PATH, in_value.value(ENV_VALUE_PATH));
 
     m_settings.endGroup();
 }
 
 QMap<QString, QVariant> Settings::getSettings() const
 {
-    QMap<QString, QVariant> myList;
+    QMap<QString, QVariant> m_list;
 
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    myList["ApplicationPath"] = m_settings.value("ApplicationPath").toString();
-    myList["ConfigFiles"] = m_settings.value("ConfigFiles").toString();
-    myList["EnvKeyRenderman"] = m_settings.value("EnvKeyRenderman").toString();
-    myList["EnvValueRenderman"] = m_settings.value("EnvValueRenderman").toString();
-    myList["EnvKeyMaya"] = m_settings.value("EnvKeyMaya").toString();
-    myList["EnvValueMaya"] = m_settings.value("EnvValueMaya").toString();
-    myList["EnvKeyPath"] = m_settings.value("EnvKeyPath").toString();
-    myList["EnvValuePath"] = m_settings.value("EnvValuePath").toString();
+    m_list[APPLICATION_PATH] = m_settings.value(APPLICATION_PATH).toString();
+    m_list[CONFIG_FILES] = m_settings.value(CONFIG_FILES).toString();
+    m_list[ENV_KEY_RENDERMAN] = m_settings.value(ENV_KEY_RENDERMAN).toString();
+    m_list[ENV_VALUE_RENDERMAN] = m_settings.value(ENV_VALUE_RENDERMAN).toString();
+    m_list[ENV_KEY_MAYA] = m_settings.value(ENV_KEY_MAYA).toString();
+    m_list[ENV_VALUE_MAYA] = m_settings.value(ENV_VALUE_MAYA).toString();
+    m_list[ENV_KEY_PATH] = m_settings.value(ENV_KEY_PATH).toString();
+    m_list[ENV_VALUE_PATH] = m_settings.value(ENV_VALUE_PATH).toString();
 
     m_settings.endGroup();
 
-    return myList;
+    return m_list;
 }
 
 QMap<QString, QVariant> Settings::getDefaultSettings() const
 {
-    QMap<QString, QVariant> myList;
+    QMap<QString, QVariant> m_list;
+
+    const QString rootPath = QDir::rootPath();
+    const QString rmVersion = QStringLiteral(APP_PRMAN_PROSERVER);
+
+    qDebug() << rootPath + rmVersion;
 
 #ifdef __APPLE__
-    myList["ApplicationPath"] = "/Applications/Pixar/RenderManProServer-21.5/bin/denoise";
-    myList["ConfigFiles"] = "/Applications/Pixar/RenderManProServer-21.5/lib/denoise";
-    myList["EnvKeyRenderman"] = "RMANTREE";
-    myList["EnvValueRenderman"] = "/Applications/Pixar/RenderManProServer-21.5";
-    myList["EnvKeyMaya"] = "RMSTREE";
-    myList["EnvValueMaya"] = "/Applications/Pixar/RenderManForMaya-21.5-maya2017";
-    myList["EnvKeyPath"] = "PATH";
-    myList["EnvValuePath"] = "${RMANTREE}/bin:${PATH}";
+    m_list[APPLICATION_PATH] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/bin/denoise");
+
+//    m_list[APPLICATION_PATH] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/bin/denoise");
+    m_list[CONFIG_FILES] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/lib/denoise");
+    m_list[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_list[ENV_VALUE_RENDERMAN] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5");
+    m_list[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_list[ENV_VALUE_MAYA] = QStringLiteral("/Applications/Pixar/RenderManForMaya-21.5-maya2017");
+    m_list[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_list[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 #endif
 
 #ifdef WIN32
-    myList["ApplicationPath"] = "C:/Program Files/Pixar/RenderManProServer-21.5/bin/denoise.exe";
-    myList["ConfigFiles"] = "C:/Program Files/Pixar/RenderManProServer-21.5/lib/denoise";
-    myList["EnvKeyRenderman"] = "RMANTREE";
-    myList["EnvValueRenderman"] = "C:/Program Files/Pixar/RenderManProServer-21.5";
-    myList["EnvKeyMaya"] = "RMSTREE";
-    myList["EnvValueMaya"] = "C:/Program Files/Pixar/RenderManForMaya-21.5-maya2017";
-    myList["EnvKeyPath"] = "PATH";
-    myList["EnvValuePath"] = "${RMANTREE}/bin:${PATH}";
+    m_list[APPLICATION_PATH] = QStringLiteral("C:/Program Files/Pixar/RenderManProServer-21.5/bin/denoise.exe");
+    m_list[CONFIG_FILES] = QStringLiteral("C:/Program Files/Pixar/RenderManProServer-21.5/lib/denoise");
+    m_list[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_list[ENV_VALUE_RENDERMAN] = QStringLiteral("C:/Program Files/Pixar/RenderManProServer-21.5");
+    m_list[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_list[ENV_VALUE_MAYA] = QStringLiteral("C:/Program Files/Pixar/RenderManForMaya-21.5-maya2017");
+    m_list[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_list[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 #endif
 
 #ifdef LINUX
-    myList["ApplicationPath"] = "/Applications/Pixar/RenderManProServer-21.5/bin/denoise";
-    myList["ConfigFiles"] = "/Applications/Pixar/RenderManProServer-21.5/lib/denoise";
-    myList["EnvKeyRenderman"] = "RMANTREE";
-    myList["EnvValueRenderman"] = "/Applications/Pixar/RenderManProServer-21.5";
-    myList["EnvKeyMaya"] = "RMSTREE";
-    myList["EnvValueMaya"] = "/Applications/Pixar/RenderManForMaya-21.5-maya2017";
-    myList["EnvKeyPath"] = "PATH";
-    myList["EnvValuePath"] = "${RMANTREE}/bin:${PATH}";
+    m_list[APPLICATION_PATH] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/bin/denoise");
+    m_list[CONFIG_FILES] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/lib/denoise");
+    m_list[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_list[ENV_VALUE_RENDERMAN] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5");
+    m_list[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_list[ENV_VALUE_MAYA] = QStringLiteral("/Applications/Pixar/RenderManForMaya-21.5-maya2017");
+    m_list[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_list[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 #endif
 
-    return myList;
+    return m_list;
 }

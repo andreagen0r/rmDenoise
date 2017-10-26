@@ -82,7 +82,7 @@ void MainWindow::on_btn_run_clicked()
                 }
                 else
                 {
-                    QMessageBox::information(this, "Information!", "Cannot render because the selected directory is not valid!");
+                    QMessageBox::information(this, tr("Information!"), tr("Cannot render because the selected directory is not valid!"));
                 }
             }
             else
@@ -94,7 +94,7 @@ void MainWindow::on_btn_run_clicked()
         else
         {
             QStringList files = m_utl->notValidImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+")));
-            msg = "Some file(s) don't exist:\n";
+            msg = tr("Some file(s) don't exist:\n");
             foreach (QString item, files)
             {
                 msg+=item + "\n";
@@ -103,7 +103,7 @@ void MainWindow::on_btn_run_clicked()
     }
     else
     {
-        msg = "No image(s) selected!";
+        msg = tr("No image(s) selected!");
     }
 
     ui->statusBar->clearMessage();
@@ -353,7 +353,7 @@ void MainWindow::on_actionAbout_triggered()
     msgBox.setText(aboutCaption);
     msgBox.setInformativeText(AboutBodyText);
 
-    QPixmap pm(QLatin1String(":/app-64.png"));
+    QPixmap pm(QStringLiteral(":/app-64.png"));
     if (!pm.isNull())
     {
         msgBox.setIconPixmap(pm);
@@ -399,7 +399,7 @@ void MainWindow::statusBarMsg(const QString &value)
 
 void MainWindow::loadConfigFiles()
 {
-    QDir configFiles(Settings::getInstance().getSettings().value("ConfigFiles").toString());
+    QDir configFiles(Settings::getInstance().getSettings().value(Settings::getInstance().CONFIG_FILES).toString());
     configFiles.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     QStringList fileFilters;
     fileFilters.append("*.json"); // Filter to only read *.json files

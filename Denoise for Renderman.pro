@@ -4,16 +4,21 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 
 # Get version from git tags
-VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --always --tags)
+#VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --always --tags)
+VERSION = $$system(git --git-dir $$PWD/.git describe --tags)
 
-QMAKE_TARGET_PRODUCT = "Renderman Denoise UI"
-QMAKE_TARGET_COMPANY = "Nankin CGI"
-QMAKE_TARGET_COPYRIGHT = "Copyright (c) by $${QMAKE_TARGET_COMPANY}"
+message($${VERSION})
+
+PRODUCT = "Renderman Denoise UI"
+COMPANY = "Nankin CGI"
+COPYRIGHT = "Copyright (c) by $${COMPANY}"
+PRMAN_PROSERVER = "RenderManProServer-21.5"
 
 DEFINES += APP_VERSION=\"\\\"$${VERSION}\\\"\" \
-           APP_PRODUCT=\"\\\"$${QMAKE_TARGET_PRODUCT}\\\"\" \
-           APP_COMPANY=\"\\\"$${QMAKE_TARGET_COMPANY}\\\"\" \
-           APP_COPYRIGHT=\"\\\"$${QMAKE_TARGET_COPYRIGHT}\\\"\"
+           APP_PRODUCT=\"\\\"$${PRODUCT}\\\"\" \
+           APP_COMPANY=\"\\\"$${COMPANY}\\\"\" \
+           APP_COPYRIGHT=\"\\\"$${COPYRIGHT}\\\"\" \
+           APP_PRMAN_PROSERVER=\"\\\"$${PRMAN_PROSERVER}\\\"\"
 
 
 #VERSION = $$GIT_VERSION
@@ -29,7 +34,7 @@ win32 {
 
 
 
-TARGET = $${QMAKE_TARGET_PRODUCT}
+TARGET = $${PRODUCT}
 TEMPLATE = app
 
 DEFINES += QT_DEPRECATED_WARNINGS

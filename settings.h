@@ -3,15 +3,8 @@
 
 #include <QVariant>
 #include <QSettings>
-
-#define APPLICATION_PATH "ApplicationPath"
-#define CONFIG_FILES "ConfigFiles"
-#define ENV_KEY_RENDERMAN "EnvKeyRenderman"
-#define ENV_VALUE_RENDERMAN "EnvValueRenderman"
-#define ENV_KEY_MAYA "EnvKeyMaya"
-#define ENV_VALUE_MAYA "EnvValueMaya"
-#define ENV_KEY_PATH "EnvKeyPath"
-#define ENV_VALUE_PATH "EnvValuePath"
+#include <QDir>
+#include <QDebug>
 
 class Settings
 {    
@@ -23,6 +16,15 @@ public:
     QMap<QString, QVariant> getSettings() const;
 
     QMap<QString, QVariant> getDefaultSettings() const;
+
+    const QString APPLICATION_PATH = QStringLiteral("ApplicationPath");
+    const QString CONFIG_FILES = QStringLiteral("ConfigFiles");
+    const QString ENV_KEY_RENDERMAN = QStringLiteral("EnvKeyRenderman");
+    const QString ENV_VALUE_RENDERMAN = QStringLiteral("EnvValueRenderman");
+    const QString ENV_KEY_MAYA = QStringLiteral("EnvKeyMaya");
+    const QString ENV_VALUE_MAYA = QStringLiteral("EnvValueMaya");
+    const QString ENV_KEY_PATH = QStringLiteral("EnvKeyPath");
+    const QString ENV_VALUE_PATH = QStringLiteral("EnvValuePath");
 
 private:
     Settings(){}
