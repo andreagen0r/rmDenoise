@@ -19,6 +19,11 @@ Preferences::Preferences(QWidget *parent) : QDialog(parent), ui(new Ui::Preferen
     ui->lineEdit_configFiles->setCompleter(m_Completer);
     ui->lineEdit_envValueMaya->setCompleter(m_Completer);
     ui->lineEdit_envValueRenderman->setCompleter(m_Completer);
+
+#ifdef WIN32
+    ui->groupBox->setVisible(false);
+    this->adjustSize();
+#endif
 }
 
 Preferences::~Preferences()

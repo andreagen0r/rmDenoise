@@ -2,26 +2,24 @@ QT += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-
 # Get version from git tags
-#VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --always --tags)
-VERSION = $$system(git --git-dir $$PWD/.git describe --tags)
-
-message($${VERSION})
+GIT_VERSION = $$system(git --git-dir $$PWD/.git --work-tree $$PWD describe --always --tags)
+VERSION = $${GIT_VERSION}
 
 PRODUCT = "Renderman Denoise UI"
 COMPANY = "Nankin CGI"
 COPYRIGHT = "Copyright (c) by $${COMPANY}"
 PRMAN_PROSERVER = "RenderManProServer-21.5"
 
-DEFINES += APP_VERSION=\"\\\"$${VERSION}\\\"\" \
+DEFINES += APP_VERSION=\"\\\"$${GIT_VERSION}\\\"\" \
            APP_PRODUCT=\"\\\"$${PRODUCT}\\\"\" \
            APP_COMPANY=\"\\\"$${COMPANY}\\\"\" \
            APP_COPYRIGHT=\"\\\"$${COPYRIGHT}\\\"\" \
            APP_PRMAN_PROSERVER=\"\\\"$${PRMAN_PROSERVER}\\\"\"
 
+message($${PRODUCT} | $${GIT_VERSION} | $${PRMAN_PROSERVER} | $${COMPANY} | $${COPYRIGHT})
 
-#VERSION = $$GIT_VERSION
+
 win32 {
     VERSION ~= s/-\d+-g[a-f0-9]{6,}//
 }

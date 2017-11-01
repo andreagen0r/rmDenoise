@@ -48,43 +48,33 @@ QMap<QString, QVariant> Settings::getDefaultSettings() const
 {
     QMap<QString, QVariant> m_list;
 
-    const QString rootPath = QDir::rootPath();
-    const QString rmVersion = QStringLiteral(APP_PRMAN_PROSERVER);
-
-    qDebug() << rootPath + rmVersion;
+    const QString m_prmanRoot = QString("%1%2").arg("/Pixar/", APP_PRMAN_PROSERVER);
+    const QString m_denoiseAppPath = QString("%1%2").arg(m_prmanRoot, "/bin/");
+    const QString m_denoiseLibPath = QString("%1%2").arg(m_prmanRoot, "/lib/");
+    const QString m_prmanEnvKey = QStringLiteral("RMANTREE");
+    const QString m_mayaEnvKey = QStringLiteral("RMSTREE");
+    const QString m_pathEnvKey = QStringLiteral("PATH");
 
 #ifdef __APPLE__
-    m_list[APPLICATION_PATH] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/bin/denoise");
-
-//    m_list[APPLICATION_PATH] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/bin/denoise");
-    m_list[CONFIG_FILES] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/lib/denoise");
-    m_list[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
-    m_list[ENV_VALUE_RENDERMAN] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5");
-    m_list[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_list[APPLICATION_PATH] = "/Applications" + m_denoiseAppPath + "denoise";
+    m_list[CONFIG_FILES] = "/Applications" + m_denoiseLibPath + "denoise";
+    m_list[ENV_KEY_RENDERMAN] = m_prmanEnvKey;
+    m_list[ENV_VALUE_RENDERMAN] = "/Applications" + m_prmanRoot;
+    m_list[ENV_KEY_MAYA] = m_mayaEnvKey;
     m_list[ENV_VALUE_MAYA] = QStringLiteral("/Applications/Pixar/RenderManForMaya-21.5-maya2017");
-    m_list[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_list[ENV_KEY_PATH] = m_pathEnvKey;
     m_list[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
-#endif
-
-#ifdef WIN32
+#elif WIN32
     m_list[APPLICATION_PATH] = QStringLiteral("C:/Program Files/Pixar/RenderManProServer-21.5/bin/denoise.exe");
     m_list[CONFIG_FILES] = QStringLiteral("C:/Program Files/Pixar/RenderManProServer-21.5/lib/denoise");
-    m_list[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
-    m_list[ENV_VALUE_RENDERMAN] = QStringLiteral("C:/Program Files/Pixar/RenderManProServer-21.5");
-    m_list[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
-    m_list[ENV_VALUE_MAYA] = QStringLiteral("C:/Program Files/Pixar/RenderManForMaya-21.5-maya2017");
-    m_list[ENV_KEY_PATH] = QStringLiteral("PATH");
-    m_list[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
-#endif
-
-#ifdef LINUX
+#else
     m_list[APPLICATION_PATH] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/bin/denoise");
     m_list[CONFIG_FILES] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5/lib/denoise");
-    m_list[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_list[ENV_KEY_RENDERMAN] = m_prmanEnvKey;
     m_list[ENV_VALUE_RENDERMAN] = QStringLiteral("/Applications/Pixar/RenderManProServer-21.5");
-    m_list[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_list[ENV_KEY_MAYA] = m_mayaEnvKey;
     m_list[ENV_VALUE_MAYA] = QStringLiteral("/Applications/Pixar/RenderManForMaya-21.5-maya2017");
-    m_list[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_list[ENV_KEY_PATH] = m_pathEnvKey;
     m_list[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 #endif
 
