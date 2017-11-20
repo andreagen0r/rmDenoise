@@ -1,6 +1,7 @@
 #include "settings.h"
 
 #include <QSettings>
+#include <QDir>
 
 const QString Settings::APPLICATION_PATH = QStringLiteral("ApplicationPath");
 const QString Settings::CONFIG_FILES = QStringLiteral("ConfigFiles");
@@ -23,14 +24,10 @@ void Settings::setSettings(const QHash<QString, QString> &in_settings)
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    m_settings.setValue(APPLICATION_PATH, in_settings.value(APPLICATION_PATH));
-    m_settings.setValue(CONFIG_FILES, in_settings.value(CONFIG_FILES));
-    m_settings.setValue(ENV_KEY_RENDERMAN, in_settings.value(ENV_KEY_RENDERMAN));
-    m_settings.setValue(ENV_VALUE_RENDERMAN, in_settings.value(ENV_VALUE_RENDERMAN));
-    m_settings.setValue(ENV_KEY_MAYA, in_settings.value(ENV_KEY_MAYA));
-    m_settings.setValue(ENV_VALUE_MAYA, in_settings.value(ENV_VALUE_MAYA));
-    m_settings.setValue(ENV_KEY_PATH, in_settings.value(ENV_KEY_PATH));
-    m_settings.setValue(ENV_VALUE_PATH, in_settings.value(ENV_VALUE_PATH));
+    for(auto m_keys : in_settings.keys())
+    {
+        m_settings.setValue(m_keys, in_settings.value(m_keys));
+    }
 
     m_settings.endGroup();
 }
@@ -42,14 +39,10 @@ QHash<QString, QString> Settings::getSettings() const
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    m_hash[APPLICATION_PATH] = m_settings.value(APPLICATION_PATH).toString();
-    m_hash[CONFIG_FILES] = m_settings.value(CONFIG_FILES).toString();
-    m_hash[ENV_KEY_RENDERMAN] = m_settings.value(ENV_KEY_RENDERMAN).toString();
-    m_hash[ENV_VALUE_RENDERMAN] = m_settings.value(ENV_VALUE_RENDERMAN).toString();
-    m_hash[ENV_KEY_MAYA] = m_settings.value(ENV_KEY_MAYA).toString();
-    m_hash[ENV_VALUE_MAYA] = m_settings.value(ENV_VALUE_MAYA).toString();
-    m_hash[ENV_KEY_PATH] = m_settings.value(ENV_KEY_PATH).toString();
-    m_hash[ENV_VALUE_PATH] = m_settings.value(ENV_VALUE_PATH).toString();
+    for(auto m_keys : m_settings.allKeys())
+    {
+        m_hash[m_keys] = m_settings.value(m_keys).toString();
+    }
 
     m_settings.endGroup();
 
@@ -60,35 +53,39 @@ QHash<QString, QString> Settings::getDefaultSettings() const
 {
     QHash<QString, QString> m_hash;
 
-    const QString m_prmanRoot = QString("%1%2").arg("/Pixar/", APP_PRMAN_PROSERVER);
-    const QString m_denoiseAppPath = QString("%1%2").arg(m_prmanRoot, "/bin/");
-    const QString m_denoiseLibPath = QString("%1%2").arg(m_prmanRoot, "/lib/denoise");
-    const QString m_prmanEnvKey = QStringLiteral("RMANTREE");
-    const QString m_mayaEnvKey = QStringLiteral("RMSTREE");
-    const QString m_pathEnvKey = QStringLiteral("PATH");
+    const QString m_prmanProServer = QString("%1%2").arg("Pixar/", APP_PRMAN_PROSERVER);
+    const QString m_rms = QString("%1%2").arg("Pixar/", APP_PRMAN_FOR_MAYA);
+    const QString m_defaultDenoise = QString("%1%2").arg(m_prmanProServer, "/bin/denoise");
+    const QString m_defaultConfigFiles = QString("%1%2").arg(m_prmanProServer, "/lib/denoise");
 
 #ifdef __APPLE__
-    m_hash[APPLICATION_PATH] = "/Applications" + m_denoiseAppPath + "denoise";
-    m_hash[CONFIG_FILES] = "/Applications" + m_denoiseLibPath;
-    m_hash[ENV_KEY_RENDERMAN] = m_prmanEnvKey;
-    m_hash[ENV_VALUE_RENDERMAN] = "/Applications" + m_prmanRoot;
-    m_hash[ENV_KEY_MAYA] = m_mayaEnvKey;
-    m_hash[ENV_VALUE_MAYA] = QStringLiteral("/Applications/Pixar/RenderManForMaya-21.5-maya2017");
-    m_hash[ENV_KEY_PATH] = m_pathEnvKey;
+    // Dynamic
+    m_hash[APPLICATION_PATH] = QDir::rootPath() + "Applications/" + m_defaultDenoise;
+    m_hash[CONFIG_FILES] = QDir::rootPath() + "Applications/" + m_defaultConfigFiles;
+    m_hash[ENV_VALUE_RENDERMAN] = QDir::rootPath() + "Applications/" + m_prmanProServer;
+    m_hash[ENV_VALUE_MAYA] = QDir::rootPath() + "Applications/" + m_rms;
+    // Literal
+    m_hash[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_hash[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_hash[ENV_KEY_PATH] = QStringLiteral("PATH");
     m_hash[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 
+
 #elif WIN32
-    m_hash[APPLICATION_PATH] = "C:/Program Files" + m_denoiseAppPath + "denoise.exe";
-    m_hash[CONFIG_FILES] = "C:/Program Files" + m_denoiseLibPath;
+    // Dynamic
+    m_hash[APPLICATION_PATH] = QDir::rootPath() + "Program Files" + m_defaultDenoise + ".exe";
+    m_hash[CONFIG_FILES] = QDir::rootPath() + "Program Files" + m_defaultConfigFiles;
 
 #elif __linux__
-    m_hash[APPLICATION_PATH] = "/Applications" + m_denoiseAppPath + "denoise";
-    m_hash[CONFIG_FILES] = "/Applications" + m_denoiseLibPath;
-    m_hash[ENV_KEY_RENDERMAN] = m_prmanEnvKey;
-    m_hash[ENV_VALUE_RENDERMAN] = "/Applications" + m_prmanRoot;
-    m_hash[ENV_KEY_MAYA] = m_mayaEnvKey;
-    m_hash[ENV_VALUE_MAYA] = QStringLiteral("/Applications/Pixar/RenderManForMaya-21.5-maya2017");
-    m_hash[ENV_KEY_PATH] = m_pathEnvKey;
+    // Dynamic
+    m_hash[APPLICATION_PATH] = QDir::rootPath() + "Applications/" + m_defaultDenoise;
+    m_hash[CONFIG_FILES] = QDir::rootPath() + "Applications/" + m_defaultConfigFiles;
+    m_hash[ENV_VALUE_RENDERMAN] = QDir::rootPath() + "Applications/" + m_prmanProServer;
+    m_hash[ENV_VALUE_MAYA] = QDir::rootPath() + "Applications/" + m_rms;
+    // Literal
+    m_hash[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_hash[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_hash[ENV_KEY_PATH] = QStringLiteral("PATH");
     m_hash[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 
 #endif

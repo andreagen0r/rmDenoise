@@ -10,12 +10,14 @@ PRODUCT = "Renderman Denoise UI"
 COMPANY = "Nankin CGI"
 COPYRIGHT = "Copyright (c) by $${COMPANY}"
 PRMAN_PROSERVER = "RenderManProServer-21.5"
+PRMAN_FOR_MAYA = "RenderManForMaya-21.5-maya2017"
 
 DEFINES += APP_VERSION=\"\\\"$${GIT_VERSION}\\\"\" \
            APP_PRODUCT=\"\\\"$${PRODUCT}\\\"\" \
            APP_COMPANY=\"\\\"$${COMPANY}\\\"\" \
            APP_COPYRIGHT=\"\\\"$${COPYRIGHT}\\\"\" \
-           APP_PRMAN_PROSERVER=\"\\\"$${PRMAN_PROSERVER}\\\"\"
+           APP_PRMAN_PROSERVER=\"\\\"$${PRMAN_PROSERVER}\\\"\" \
+           APP_PRMAN_FOR_MAYA=\"\\\"$${PRMAN_FOR_MAYA}\\\"\"
 
 message($${PRODUCT} | $${GIT_VERSION} | $${PRMAN_PROSERVER} | $${COMPANY} | $${COPYRIGHT})
 

@@ -96,19 +96,16 @@ void Preferences::on_lineEdit_appPath_editingFinished()
                 Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
     }
 
-
-
     if(m_file.isFile())
     {
         if(m_file.isExecutable())
         {
-            m_isStateChange = (ui->lineEdit_appPath->text() == Settings::getInstance().getSettings()
-                               .value(Settings::APPLICATION_PATH));
+            m_isStateChange = (ui->lineEdit_appPath->text() ==
+                               Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
         }
         else
         {
-            ui->lineEdit_appPath->setText(Settings::getInstance().getSettings()
-                                          .value(Settings::APPLICATION_PATH));
+            ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
         }
     }
     else
@@ -121,8 +118,7 @@ void Preferences::on_lineEdit_appPath_editingFinished()
                                   (ui->lineEdit_appPath->text()));
         msgBox.exec();
 
-        ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value
-                                      (Settings::APPLICATION_PATH));
+        ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
     }
 }
 
@@ -132,8 +128,7 @@ void Preferences::on_lineEdit_configFiles_editingFinished()
 
     if( ! m_isStateChange)
     {
-        m_isStateChange = (m_dir.absolutePath() != Settings::getInstance().getSettings().value
-                (Settings::CONFIG_FILES));
+        m_isStateChange = (m_dir.absolutePath() != Settings::getInstance().getSettings().value(Settings::CONFIG_FILES));
     }
 
     if( ! m_dir.exists())
@@ -145,75 +140,62 @@ void Preferences::on_lineEdit_configFiles_editingFinished()
         msgBox.setInformativeText(tr("The directory <b>%1</b> does not exist!").arg(m_dir.dirName()));
         msgBox.exec();
 
-        ui->lineEdit_configFiles->setText(Settings::getInstance().getSettings().value
-                                          (Settings::CONFIG_FILES));
+        ui->lineEdit_configFiles->setText(Settings::getInstance().getSettings().value(Settings::CONFIG_FILES));
     }
 }
 
 void Preferences::on_lineEdit_envKeyRenderman_editingFinished()
 {
-    QString m_tmp = ui->lineEdit_envKeyRenderman->text();
-
     if(!m_isStateChange)
     {
-        m_isStateChange = (m_tmp != Settings::getInstance().getSettings().value
-                (Settings::ENV_KEY_RENDERMAN));
+        m_isStateChange = (ui->lineEdit_envKeyRenderman->text() !=
+                Settings::getInstance().getSettings().value(Settings::ENV_KEY_RENDERMAN));
     }
 
 }
 
 void Preferences::on_lineEdit_envValueRenderman_editingFinished()
 {
-    QString m_tmp = ui->lineEdit_envValueRenderman->text();
-
     if(!m_isStateChange)
     {
-        m_isStateChange = (m_tmp != Settings::getInstance().getSettings().value
-                (Settings::ENV_VALUE_RENDERMAN));
+        m_isStateChange = (ui->lineEdit_envValueRenderman->text() !=
+                Settings::getInstance().getSettings().value(Settings::ENV_VALUE_RENDERMAN));
     }
 }
 
 void Preferences::on_lineEdit_envKeyMaya_editingFinished()
 {
-    QString m_tmp = ui->lineEdit_envKeyMaya->text();
-
     if(!m_isStateChange)
     {
-        m_isStateChange = (m_tmp != Settings::getInstance().getSettings().value
-                (Settings::ENV_KEY_MAYA));
+        m_isStateChange = (ui->lineEdit_envKeyMaya->text() !=
+                Settings::getInstance().getSettings().value(Settings::ENV_KEY_MAYA));
     }
 }
 
 void Preferences::on_lineEdit_envValueMaya_editingFinished()
 {
-    QString m_tmp = ui->lineEdit_envValueMaya->text();
-
     if(!m_isStateChange)
     {
-        m_isStateChange = (m_tmp != Settings::getInstance().getSettings().value
-                (Settings::ENV_VALUE_MAYA));
+        m_isStateChange = (ui->lineEdit_envValueMaya->text() !=
+                Settings::getInstance().getSettings().value(Settings::ENV_VALUE_MAYA));
     }
 }
 
 void Preferences::on_lineEdit_envKeyPath_editingFinished()
 {
-    QString m_tmp = ui->lineEdit_envKeyPath->text();
-
     if(!m_isStateChange)
     {
-        m_isStateChange = (m_tmp != Settings::getInstance().getSettings().value
-                (Settings::ENV_KEY_PATH));
+        m_isStateChange = (ui->lineEdit_envKeyPath->text() !=
+                Settings::getInstance().getSettings().value(Settings::ENV_KEY_PATH));
     }
 }
 
 void Preferences::on_lineEdit_envValuePath_editingFinished()
 {
-    QString m_tmp = ui->lineEdit_envValuePath->text();
-
     if(!m_isStateChange)
     {
-        m_isStateChange = (m_tmp != Settings::getInstance().getSettings().value
-                (Settings::ENV_VALUE_PATH));
+        m_isStateChange = (ui->lineEdit_envValuePath->text() !=
+                Settings::getInstance().getSettings().value(Settings::ENV_VALUE_PATH));
     }
 }
 
@@ -254,13 +236,13 @@ void Preferences::closeCheck()
         {
         case QMessageBox::Yes:
             saveSettings();
+            emit preferencesUpdated();
             break;
         default:
             break;
         }
     }
 
-    emit preferencesUpdated();
     m_isStateChange = false;
 
     close();
