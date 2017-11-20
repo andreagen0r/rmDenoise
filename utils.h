@@ -2,10 +2,9 @@
 #define UTILS_H
 
 #include <QStringList>
-#include <QFileInfo>
+//#include <QFileInfo>
 #include <QDir>
-#include <QDebug>
-#include <QMessageBox>
+
 
 class Utils : public QObject
 {

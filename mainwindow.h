@@ -2,17 +2,6 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QDir>
-#include <QThread>
-#include <QDebug>
-#include <QMessageBox>
-#include <QRegularExpression>
-#include <QProgressDialog>
-#include <QTimer>
-#include <QCompleter>
-#include <QDirModel>
 
 #include "pxrdenoise.h"
 #include "preferencesUI.h"
@@ -52,16 +41,12 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Preferences *m_prefUi;
     PXRDenoise *m_pxrDenoise;
     QTimer *m_timer;
     Utils *m_utl;
 
-    QCompleter *m_completer;
-
     QString render();
     void createFlagLine();
-
 
     QString m_flagName;
     QDir m_flagOutDir;

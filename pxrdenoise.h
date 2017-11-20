@@ -1,12 +1,7 @@
 #ifndef PXRDENOISE_H
 #define PXRDENOISE_H
 
-#include <QStringList>
-#include <QProcess>
 #include <QThread>
-#include <QMutex>
-
-#include "settings.h"
 
 class PXRDenoise : public QThread
 {
@@ -14,8 +9,6 @@ class PXRDenoise : public QThread
 
 public:
     explicit PXRDenoise(QObject *parent = 0);
-
-    void run();
 
     QStringList getCommandLine() const;
     void setCommandLine(const QStringList &in_value);
@@ -29,6 +22,9 @@ private:
     void renderDenoise();
 
     QStringList m_commandLine;
+
+protected:
+    void run() override;
 };
 
 #endif // PXRDENOISE_H

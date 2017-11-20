@@ -1,6 +1,22 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "settings.h"
+
+#include <QSettings>
+#include <QCompleter>
+#include <QTimer>
+#include <QDirModel>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QDir>
+#include <QThread>
+#include <QDebug>
+#include <QMessageBox>
+#include <QRegularExpression>
+#include <QProgressDialog>
+
+
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
@@ -17,13 +33,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
     m_settings.endGroup();
 
-    m_prefUi = new Preferences(this);
+//    m_prefUi = new Preferences(this);
     m_pxrDenoise = new PXRDenoise;
     m_timer = new QTimer(this);
     m_utl = new Utils(this);
 
-    connect(m_prefUi, &Preferences::preferencesUpdate, this, &MainWindow::loadConfigFiles);
-    emit m_prefUi->preferencesUpdate();
+
+    loadConfigFiles();
 
     // Verify how many threads there are in the computer and set the max number of threads to the spinBox
     ui->spnBox_threads->setMaximum(QThread::idealThreadCount());
@@ -52,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     connect(m_timer, &QTimer::timeout, this, &MainWindow::renderProgress);
 
 
-    m_completer = new QCompleter(this);
+    QCompleter *m_completer = new QCompleter(this);
     m_completer->setModel(new QDirModel(m_completer));
     m_completer->setCaseSensitivity(Qt::CaseInsensitive);
     m_completer->setCompletionMode(QCompleter::PopupCompletion);
@@ -169,7 +185,8 @@ void MainWindow::on_btn_outDir_clicked()
         path = QDir::homePath();
     }
 
-    QString dir = QFileDialog::getExistingDirectory(this, "Open Directory", path.path(), QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+    QString dir = QFileDialog::getExistingDirectory(this, tr("Open Directory"), path.path(), QFileDialog::ShowDirsOnly
+                                                    | QFileDialog::DontResolveSymlinks);
 
     if(!dir.isEmpty() && !dir.isNull())
     {
@@ -340,7 +357,7 @@ void MainWindow::on_actionAbout_triggered()
                 "Copyright (c) 2014-2017 Walt Disney Animation Studios. <br>"
                 "For more information about Renderman and denoise filter visit <a href=\"http://%2\">%2</a><br>"
                 "<p>Created by André Agenor <a href=\"http://%3\">%3</a>.<br>"
-                "Windows version deployed by Arleson Tonera.<br>"
+                "Windows version deployed by Arleson Tonnera.<br>"
                 "Visit the <a href=\"http://%4/andreagen0r/rmDenoise\">%4</a> for the source code.</p>"
                 "All rights reserved to your respective owners.</p>"
                 ).arg((APP_PRODUCT),
@@ -364,7 +381,9 @@ void MainWindow::on_actionAbout_triggered()
 
 void MainWindow::on_actionPreferences_triggered()
 {
-    m_prefUi->exec();
+    Preferences m_prefUi(this);
+    m_prefUi.exec();
+    loadConfigFiles();
 }
 
 void MainWindow::renderStatus(const bool &arg1)
@@ -399,7 +418,7 @@ void MainWindow::statusBarMsg(const QString &value)
 
 void MainWindow::loadConfigFiles()
 {
-    QDir configFiles(Settings::getInstance().getSettings().value(Settings::getInstance().CONFIG_FILES).toString());
+    QDir configFiles(Settings::getInstance().getSettings().value(Settings::getInstance().CONFIG_FILES));
     configFiles.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     QStringList fileFilters;
     fileFilters.append("*.json"); // Filter to only read *.json files
@@ -407,6 +426,7 @@ void MainWindow::loadConfigFiles()
 
     if(!myList.isEmpty())
     {
+        ui->listWidget_configFiles->clear();
         // Load config files to configFiles
         ui->listWidget_configFiles->addItems(myList);
         ui->listWidget_configFiles->setCurrentRow(0);

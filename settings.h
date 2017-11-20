@@ -1,35 +1,33 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <QVariant>
-#include <QSettings>
-#include <QDir>
-#include <QDebug>
+#include <QHash>
 
-class Settings
+class Settings        
 {    
 public:
+    // Singleton
     static Settings &getInstance();
 
-    void setSettings(const QMap<QString, QVariant> &in_value);
+    void setSettings(const QHash<QString, QString> &in_settings);
 
-    QMap<QString, QVariant> getSettings() const;
+    QHash<QString, QString> getSettings() const;
 
-    QMap<QString, QVariant> getDefaultSettings() const;
+    QHash<QString, QString> getDefaultSettings() const;
 
-    const QString APPLICATION_PATH = QStringLiteral("ApplicationPath");
-    const QString CONFIG_FILES = QStringLiteral("ConfigFiles");
-    const QString ENV_KEY_RENDERMAN = QStringLiteral("EnvKeyRenderman");
-    const QString ENV_VALUE_RENDERMAN = QStringLiteral("EnvValueRenderman");
-    const QString ENV_KEY_MAYA = QStringLiteral("EnvKeyMaya");
-    const QString ENV_VALUE_MAYA = QStringLiteral("EnvValueMaya");
-    const QString ENV_KEY_PATH = QStringLiteral("EnvKeyPath");
-    const QString ENV_VALUE_PATH = QStringLiteral("EnvValuePath");
+    static const QString APPLICATION_PATH;
+    static const QString CONFIG_FILES;
+    static const QString ENV_KEY_RENDERMAN;
+    static const QString ENV_VALUE_RENDERMAN;
+    static const QString ENV_KEY_MAYA;
+    static const QString ENV_VALUE_MAYA;
+    static const QString ENV_KEY_PATH;
+    static const QString ENV_VALUE_PATH;
 
 private:
     Settings(){}
     Settings(Settings const&) = delete;
-    void operator=(Settings const&) = delete;
+    void operator = (Settings const&) = delete;
 };
 
 #endif // SETTINGS_H
