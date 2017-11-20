@@ -38,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     m_timer = new QTimer(this);
     m_utl = new Utils(this);
 
-
     loadConfigFiles();
 
     // Verify how many threads there are in the computer and set the max number of threads to the spinBox
@@ -420,14 +419,11 @@ void MainWindow::loadConfigFiles()
 {
     QDir configFiles(Settings::getInstance().getSettings().value(Settings::getInstance().CONFIG_FILES));
     configFiles.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-    QStringList fileFilters;
-    fileFilters.append("*.json"); // Filter to only read *.json files
-    QStringList myList = configFiles.entryList(fileFilters);
+    QStringList myList(configFiles.entryList(QStringList(QStringLiteral("*.json"))));
 
     if(!myList.isEmpty())
     {
         ui->listWidget_configFiles->clear();
-        // Load config files to configFiles
         ui->listWidget_configFiles->addItems(myList);
         ui->listWidget_configFiles->setCurrentRow(0);
         ui->chbox_f->setEnabled(true);
