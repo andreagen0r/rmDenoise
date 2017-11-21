@@ -5,8 +5,8 @@
 
 #include "pxrdenoise.h"
 #include "preferencesUI.h"
-#include "utils.h"
 
+#include <QDir>
 
 namespace Ui {
 class MainWindow;
@@ -43,10 +43,15 @@ private:
     Ui::MainWindow *ui;
     PXRDenoise *m_pxrDenoise;
     QTimer *m_timer;
-    Utils *m_utl;
 
     QString render();
     void createFlagLine();
+    void loadFirstTime();
+
+    bool checkImages(const QStringList &value);
+    QStringList notValidImages(const QStringList &value);
+    QStringList validImages(const QStringList &value);
+    bool checkDir(const QString &value);
 
     QString m_flagName;
     QDir m_flagOutDir;

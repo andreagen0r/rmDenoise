@@ -8,36 +8,28 @@
 #include <QTimer>
 #include <QDirModel>
 #include <QFileDialog>
-#include <QFileInfo>
-#include <QDir>
+
 #include <QThread>
-#include <QDebug>
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QProgressDialog>
 
+#include <QDebug>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow)
+MainWindow::MainWindow(QWidget *parent)
+    : QMainWindow(parent),
+      ui(new Ui::MainWindow),
+      m_pxrDenoise(new PXRDenoise),
+      m_timer(new QTimer(this))
 {
     ui->setupUi(this);
 
     this->setWindowTitle(APP_PRODUCT);
 
     // Load default settings at first time
-    QSettings m_settings(APP_COMPANY, APP_PRODUCT);
-    m_settings.beginGroup(APP_PRODUCT);
-    if(!m_settings.contains("FirstTime"))
-    {
-        m_settings.setValue("FirstTime", 1);
-        Settings::getInstance().setSettings(Settings::getInstance().getDefaultSettings());
-    }
-    m_settings.endGroup();
+    loadFirstTime();
 
-//    m_prefUi = new Preferences(this);
-    m_pxrDenoise = new PXRDenoise;
-    m_timer = new QTimer(this);
-    m_utl = new Utils(this);
-
+    // Load *.json config files to listwidget
     loadConfigFiles();
 
     // Verify how many threads there are in the computer and set the max number of threads to the spinBox
@@ -77,6 +69,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
 MainWindow::~MainWindow()
 {
+    delete m_timer;
+    delete m_pxrDenoise;
     delete ui;
 }
 
@@ -86,11 +80,11 @@ void MainWindow::on_btn_run_clicked()
 
     if(ui->lineEdit_imagePath->text() != "")
     {
-        if(m_utl->checkImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+"))))
+        if(checkImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+"))))
         {
             if(ui->lineEdit_outdir->isEnabled())
             {
-                if(m_utl->checkDir(ui->lineEdit_outdir->text()))
+                if(checkDir(ui->lineEdit_outdir->text()))
                 {
                     // Render...
                     msg = render();
@@ -108,7 +102,7 @@ void MainWindow::on_btn_run_clicked()
         }
         else
         {
-            QStringList files = m_utl->notValidImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+")));
+            QStringList files = notValidImages(ui->lineEdit_imagePath->text().simplified().split(QRegularExpression("\\s+")));
             msg = tr("Some file(s) don't exist:\n");
             foreach (QString item, files)
             {
@@ -199,7 +193,7 @@ void MainWindow::on_btn_outDir_clicked()
 
 void MainWindow::on_lineEdit_outdir_editingFinished()
 {
-    m_utl->checkDir(ui->lineEdit_outdir->text().simplified());
+    checkDir(ui->lineEdit_outdir->text().simplified());
 }
 
 void MainWindow::on_chbox_crossframe_stateChanged(int arg1)
@@ -339,6 +333,19 @@ void MainWindow::createFlagLine()
     m_pxrDenoise->setCommandLine(tmpFlag);
 }
 
+void MainWindow::loadFirstTime()
+{
+    QHash<QString, QString> m_hash{Settings::getInstance().getSettings()};
+
+    if( ! m_hash.contains(Settings::FIRST_TIME))
+    {
+        // First time
+        m_hash[Settings::FIRST_TIME] = QStringLiteral("1");
+        Settings::getInstance().setSettings(m_hash);
+        Settings::getInstance().setSettings(Settings::getInstance().getDefaultSettings());
+    }
+}
+
 void MainWindow::on_actionAboutQT_triggered()
 {
     QMessageBox::aboutQt(this, "About QT");
@@ -434,3 +441,110 @@ void MainWindow::loadConfigFiles()
         ui->chbox_f->setEnabled(false);
     }
 }
+
+
+
+bool MainWindow::checkImages(const QStringList &value)
+{
+    bool result;
+
+    if(value.isEmpty())
+    {
+        result = false;
+    }
+    else
+    {
+        QFileInfo selectedFiles;
+        foreach (QString file, value)
+        {
+            selectedFiles = file;
+            if(selectedFiles.exists() && selectedFiles.isFile())
+            {
+                if(selectedFiles.suffix() == "exr" || selectedFiles.suffix() == "EXR" )
+                {
+                    //qDebug() << "The file suffix is ok!";
+                    result = true;
+                }
+            }
+            else
+            {
+                //qDebug() << "The file doesn't exist";
+                result = false;
+                break;
+            }
+        }
+    }
+
+    return result;
+}
+
+QStringList MainWindow::notValidImages(const QStringList &value)
+{
+    QStringList result;
+
+    if(!value.isEmpty())
+    {
+        QFileInfo selectedFiles;
+
+        foreach (QString file, value)
+        {
+            selectedFiles = file;
+            if(!selectedFiles.exists() && !selectedFiles.isFile())
+            {
+                result.append(file);
+            }
+        }
+    }
+
+    return result; // List of invalid images
+}
+
+QStringList MainWindow::validImages(const QStringList &value)
+{
+    QStringList result;
+
+    if(!value.isEmpty())
+    {
+        QFileInfo selectedFiles;
+
+        foreach (QString file, value)
+        {
+            selectedFiles = file;
+            if(selectedFiles.exists() && selectedFiles.isFile())
+            {
+                if(selectedFiles.suffix() == "exr" || selectedFiles.suffix() == "EXR" )
+                {
+                    result.append(file);
+                }
+            }
+        }
+    }
+
+    return result; // List of valid images
+}
+
+bool MainWindow::checkDir(const QString &value)
+{
+    bool result;
+
+    if(value.isEmpty() || value.isNull())
+    {
+        result = false;
+    }
+    else
+    {
+        QDir outDir(value);
+
+        if((!outDir.exists() && outDir.path() != "") || outDir.path() == QDir::separator() || outDir.path() == ".")
+        {
+            result = false;
+        }
+        else
+        {
+            result = true;
+        }
+    }
+
+    return result;
+}
+
