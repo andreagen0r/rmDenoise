@@ -1,12 +1,9 @@
 #include "preferencesUI.h"
 #include "ui_preferencesUI.h"
-
 #include "settings.h"
 
-#include <QSettings>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QFileInfo>
 #include <QCompleter>
 #include <QDirModel>
 
