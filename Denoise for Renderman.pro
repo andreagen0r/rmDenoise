@@ -45,14 +45,12 @@ SOURCES += main.cpp\
         mainwindow.cpp \
         pxrdenoise.cpp \
         preferencesUI.cpp \
-        settings.cpp \
-        utils.cpp
+        settings.cpp
 
 HEADERS += mainwindow.h \
             pxrdenoise.h \
             preferencesUI.h \
-            settings.h \
-            utils.h
+            settings.h
 
 FORMS += mainwindow.ui \
             preferencesUI.ui
