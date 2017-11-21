@@ -23,6 +23,7 @@ public:
     static const QString ENV_VALUE_MAYA;
     static const QString ENV_KEY_PATH;
     static const QString ENV_VALUE_PATH;
+    static const QString FIRST_TIME;
 
 private:
     Settings(){}

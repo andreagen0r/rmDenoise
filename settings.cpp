@@ -3,14 +3,15 @@
 #include <QSettings>
 #include <QDir>
 
-const QString Settings::APPLICATION_PATH = QStringLiteral("ApplicationPath");
-const QString Settings::CONFIG_FILES = QStringLiteral("ConfigFiles");
-const QString Settings::ENV_KEY_RENDERMAN = QStringLiteral("EnvKeyRenderman");
-const QString Settings::ENV_VALUE_RENDERMAN = QStringLiteral("EnvValueRenderman");
-const QString Settings::ENV_KEY_MAYA = QStringLiteral("EnvKeyMaya");
-const QString Settings::ENV_VALUE_MAYA = QStringLiteral("EnvValueMaya");
-const QString Settings::ENV_KEY_PATH = QStringLiteral("EnvKeyPath");
-const QString Settings::ENV_VALUE_PATH = QStringLiteral("EnvValuePath");
+const QString Settings::APPLICATION_PATH = QStringLiteral("APPLICATION_PATH");
+const QString Settings::CONFIG_FILES = QStringLiteral("CONFIG_FILES");
+const QString Settings::ENV_KEY_RENDERMAN = QStringLiteral("ENV_KEY_RENDERMAN");
+const QString Settings::ENV_VALUE_RENDERMAN = QStringLiteral("ENV_VALUE_RENDERMAN");
+const QString Settings::ENV_KEY_MAYA = QStringLiteral("ENV_KEY_MAYA");
+const QString Settings::ENV_VALUE_MAYA = QStringLiteral("ENV_VALUE_MAYA");
+const QString Settings::ENV_KEY_PATH = QStringLiteral("ENV_KEY_PATH");
+const QString Settings::ENV_VALUE_PATH = QStringLiteral("ENV_VALUE_PATH");
+const QString Settings::FIRST_TIME = QStringLiteral("FIRST_TIME");
 
 Settings &Settings::getInstance()
 {
