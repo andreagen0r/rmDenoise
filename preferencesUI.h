@@ -2,6 +2,9 @@
 #define PREFERENCESUI_H
 
 #include <QDialog>
+#include <memory>
+
+class QCompleter;
 
 namespace Ui {
 class Preferences;
@@ -38,10 +41,11 @@ private slots:
 private:
     Ui::Preferences *ui;
 
+    bool m_isStateChange;
+    std::unique_ptr<QCompleter> m_completer;
+
     void saveSettings();
     void loadSettings();
-
-    bool m_isStateChange;
 };
 
 #endif // PREFERENCESUI_H

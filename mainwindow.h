@@ -7,6 +7,9 @@
 #include "preferencesUI.h"
 
 #include <QDir>
+#include <memory>
+
+class QCompleter;
 
 namespace Ui {
 class MainWindow;
@@ -41,8 +44,9 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    PXRDenoise *m_pxrDenoise;
-    QTimer *m_timer;
+    std::unique_ptr<PXRDenoise> m_pxrDenoise;
+    std::unique_ptr<QTimer> m_timer;
+    std::unique_ptr<QCompleter> m_completer;
 
     QString render();
     void createFlagLine();

@@ -10,7 +10,8 @@
 Preferences::Preferences(QWidget *parent)
     : QDialog(parent),
       ui(new Ui::Preferences),
-      m_isStateChange(false)
+      m_isStateChange(false),
+      m_completer(new QCompleter(this))
 {
     ui->setupUi(this);
     this->setWindowModality(Qt::WindowModal);
@@ -20,14 +21,13 @@ Preferences::Preferences(QWidget *parent)
     connect(ui->btn_close, &QPushButton::released, this, &Preferences::closeCheck);
     connect(this, &Preferences::rejected, this, &Preferences::closeCheck);
 
-    QCompleter *m_Completer = new QCompleter(this);
-    m_Completer->setModel(new QDirModel(m_Completer));
-    m_Completer->setCaseSensitivity(Qt::CaseInsensitive);
-    m_Completer->setCompletionMode(QCompleter::PopupCompletion);
-    ui->lineEdit_appPath->setCompleter(m_Completer);
-    ui->lineEdit_configFiles->setCompleter(m_Completer);
-    ui->lineEdit_envValueMaya->setCompleter(m_Completer);
-    ui->lineEdit_envValueRenderman->setCompleter(m_Completer);
+    m_completer->setModel(new QDirModel(m_completer.get()));
+    m_completer->setCaseSensitivity(Qt::CaseInsensitive);
+    m_completer->setCompletionMode(QCompleter::PopupCompletion);
+    ui->lineEdit_appPath->setCompleter(m_completer.get());
+    ui->lineEdit_configFiles->setCompleter(m_completer.get());
+    ui->lineEdit_envValueMaya->setCompleter(m_completer.get());
+    ui->lineEdit_envValueRenderman->setCompleter(m_completer.get());
 
 #ifdef WIN32
     ui->groupBox->setVisible(false);

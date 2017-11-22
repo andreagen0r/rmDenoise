@@ -20,7 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
       m_pxrDenoise(new PXRDenoise),
-      m_timer(new QTimer(this))
+      m_timer(new QTimer(this)),
+      m_completer(new QCompleter)
 {
     ui->setupUi(this);
 
@@ -54,23 +55,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->chbox_t, &QCheckBox::toggled, ui->spnBox_threads, &QSpinBox::setEnabled);
     connect(ui->chbox_override, &QCheckBox::toggled, ui->lineEdit_override, &QLineEdit::setEnabled);
     connect(ui->btn_close, &QPushButton::released, this, &MainWindow::close);
-    connect(m_pxrDenoise, &PXRDenoise::renderStatus, this, &MainWindow::renderStatus);
-    connect(m_pxrDenoise, &PXRDenoise::renderOutputMessage, this, &MainWindow::statusBarMsg);
-    connect(m_timer, &QTimer::timeout, this, &MainWindow::renderProgress);
+    connect(m_pxrDenoise.get(), &PXRDenoise::renderStatus, this, &MainWindow::renderStatus);
+    connect(m_pxrDenoise.get(), &PXRDenoise::renderOutputMessage, this, &MainWindow::statusBarMsg);
+    connect(m_timer.get(), &QTimer::timeout, this, &MainWindow::renderProgress);
 
 
-    QCompleter *m_completer = new QCompleter(this);
-    m_completer->setModel(new QDirModel(m_completer));
+    m_completer->setModel(new QDirModel(m_completer.get()));
     m_completer->setCaseSensitivity(Qt::CaseInsensitive);
     m_completer->setCompletionMode(QCompleter::PopupCompletion);
-    ui->lineEdit_imagePath->setCompleter(m_completer);
-    ui->lineEdit_outdir->setCompleter(m_completer);
+    ui->lineEdit_imagePath->setCompleter(m_completer.get());
+    ui->lineEdit_outdir->setCompleter(m_completer.get());
 }
 
 MainWindow::~MainWindow()
 {
-    delete m_timer;
-    delete m_pxrDenoise;
     delete ui;
 }
 
