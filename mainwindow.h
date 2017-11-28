@@ -8,6 +8,9 @@
 
 #include <QDir>
 #include <memory>
+#include <map>
+#include <string>
+#include <iostream>
 
 class QCompleter;
 
@@ -42,6 +45,26 @@ private slots:
 
     void loadConfigFiles();
 
+    void on_chbox_n_toggled(bool checked);
+
+    void on_chbox_filtervariance_toggled(bool checked);
+
+    void on_chbox_crossframe_toggled(bool checked);
+
+    void on_chbox_v_toggled(bool checked);
+
+    void on_chbox_skipfirst_toggled(bool checked);
+
+    void on_chbox_skiplast_toggled(bool checked);
+
+    void on_chbox_layers_toggled(bool checked);
+
+    void on_chbox_t_toggled(bool checked);
+    void on_spnBox_threads_valueChanged(const QString &arg1);
+
+    void on_chbox_override_toggled(bool checked);
+
+
 private:
     Ui::MainWindow *ui;
     std::unique_ptr<PXRDenoise> m_pxrDenoise;
@@ -51,6 +74,9 @@ private:
     QString render();
     void createFlagLine();
     void loadFirstTime();
+
+    void registerCommandLine(const bool &in_checked, const std::string &in_flagKey,
+                             const std::string &in_flagValue);
 
     bool checkImages(const QStringList &value);
     QStringList notValidImages(const QStringList &value);
@@ -63,8 +89,10 @@ private:
     QStringList m_flagOverride;
     QStringList m_flagImages;
     QStringList m_flagConfigFiles;
-    int m_flagThreads;
+
     int m_progress;
+
+    std::map<std::string, std::string> m_test;
 
 };
 

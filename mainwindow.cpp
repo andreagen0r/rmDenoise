@@ -3,16 +3,16 @@
 
 #include "settings.h"
 
+#include <thread>
+
 #include <QSettings>
 #include <QCompleter>
 #include <QTimer>
 #include <QDirModel>
 #include <QFileDialog>
-#include <QThread>
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QProgressDialog>
-
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -33,7 +33,8 @@ MainWindow::MainWindow(QWidget *parent)
     loadConfigFiles();
 
     // Verify how many threads there are in the computer and set the max number of threads to the spinBox
-    ui->spnBox_threads->setMaximum(QThread::idealThreadCount());
+    ui->spnBox_threads->setMaximum(std::thread::hardware_concurrency());
+
 
     ui->lineEdit_imagePath->setAttribute(Qt::WA_MacShowFocusRect, 0);
     ui->lineEdit_layers->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -230,35 +231,35 @@ void MainWindow::createFlagLine()
     }
 
     // Flag --filtervariance
-    if(ui->chbox_filtervariance->isChecked())
-    {
-        tmpFlag.append("--filtervariance");
-    }
+//    if(ui->chbox_filtervariance->isChecked())
+//    {
+//        tmpFlag.append("--filtervariance");
+//    }
 
-    // Flag -v (Motion Vectors)
-    if(ui->chbox_v->isChecked())
-    {
-        tmpFlag.append("-v");
-        tmpFlag.append("variance");
-    }
+//    // Flag -v (Motion Vectors)
+//    if(ui->chbox_v->isChecked())
+//    {
+//        tmpFlag.append("-v");
+//        tmpFlag.append("variance");
+//    }
 
     // Flag --crossframe (Cross-Frame)
-    if(ui->chbox_crossframe->isChecked())
-    {
-        tmpFlag.append("--crossframe");
-    }
+//    if(ui->chbox_crossframe->isChecked())
+//    {
+//        tmpFlag.append("--crossframe");
+//    }
 
     // Flag --skipfirst, -F, -L (Skip First Frame)
-    if(ui->chbox_skipfirst->isChecked())
-    {
-        tmpFlag.append("--skipfirst");
-    }
+//    if(ui->chbox_skipfirst->isChecked())
+//    {
+//        tmpFlag.append("--skipfirst");
+//    }
 
     // Flag --skiplast, -L (Skip Last Frame)
-    if(ui->chbox_skiplast->isChecked())
-    {
-        tmpFlag.append("--skiplast");
-    }
+//    if(ui->chbox_skiplast->isChecked())
+//    {
+//        tmpFlag.append("--skiplast");
+//    }
 
     // Flag --layers (Layers)
     if(ui->chbox_layers->isChecked())
@@ -292,27 +293,27 @@ void MainWindow::createFlagLine()
     }
 
     // Flag -t (Thread)
-    if(ui->chbox_t->isChecked())
-    {
-        m_flagThreads = ui->spnBox_threads->value();
-        tmpFlag.append("-t");
-        tmpFlag.append(QString::number(m_flagThreads));
-    }
+//    if(ui->chbox_t->isChecked())
+//    {
+//        m_flagThreads = ui->spnBox_threads->value();
+//        tmpFlag.append("-t");
+//        tmpFlag.append(QString::number(m_flagThreads));
+//    }
 
     // Flag --override (Override)
-    if(ui->chbox_override->isChecked())
-    {
-        if(ui->lineEdit_override->text() != "")
-        {
-            // Set override
-            QRegularExpression exp = QRegularExpression("\\s+(?!\\d+])");
-            QStringList myList = ui->lineEdit_override->text().split(exp);
-            m_flagOverride = myList;
+//    if(ui->chbox_override->isChecked())
+//    {
+//        if(ui->lineEdit_override->text() != "")
+//        {
+//            // Set override
+//            QRegularExpression exp = QRegularExpression("\\s+(?!\\d+])");
+//            QStringList myList = ui->lineEdit_override->text().split(exp);
+//            m_flagOverride = myList;
 
-            tmpFlag.append("--override");
-            tmpFlag.append(m_flagOverride);
-        }
-    }
+//            tmpFlag.append("--override");
+//            tmpFlag.append(m_flagOverride);
+//        }
+//    }
 
     // Image Path
     if(ui->lineEdit_imagePath->text() != "")
@@ -322,10 +323,10 @@ void MainWindow::createFlagLine()
     }
 
     // Flag -n (Output basename)
-    if(ui->chbox_n->isChecked())
-    {
-        tmpFlag.append("-n");
-    }
+//    if(ui->chbox_n->isChecked())
+//    {
+//        tmpFlag.append("-n");
+//    }
 
     m_pxrDenoise->setCommandLine(tmpFlag);
 }
@@ -439,8 +440,6 @@ void MainWindow::loadConfigFiles()
     }
 }
 
-
-
 bool MainWindow::checkImages(const QStringList &value)
 {
     bool result;
@@ -544,4 +543,106 @@ bool MainWindow::checkDir(const QString &value)
 
     return result;
 }
+
+
+
+
+void MainWindow::registerCommandLine(const bool &in_checked, const std::string &in_flagKey,
+                                     const std::string &in_flagValue)
+{
+    if(in_checked)
+    {
+        m_test.insert(std::make_pair(in_flagKey, in_flagValue));
+    }
+    else
+    {
+        m_test.erase(in_flagKey);
+    }
+
+    QStringList list;
+    for(auto it : m_test)
+    {
+        list.append(QString::fromStdString(it.second));
+    }
+
+    qDebug() << list;
+}
+
+void MainWindow::on_chbox_n_toggled(bool checked)
+{
+    // Flag -n (Output basename)
+    registerCommandLine(checked, "n", "-n");
+}
+
+void MainWindow::on_chbox_filtervariance_toggled(bool checked)
+{
+    // Flag --filtervariance
+    registerCommandLine(checked, "filtervariance", "--filtervariance");
+}
+
+void MainWindow::on_chbox_crossframe_toggled(bool checked)
+{
+    // Flag --crossframe (Cross-Frame)
+    registerCommandLine(checked, "crossframe", "--crossframe");
+}
+
+void MainWindow::on_chbox_v_toggled(bool checked)
+{
+    // Flag -v (Motion Vectors)
+    registerCommandLine(checked, "v", "-v");
+    registerCommandLine(checked, "variance", "variance");
+}
+
+void MainWindow::on_chbox_skipfirst_toggled(bool checked)
+{
+    // Flag --skipfirst, -F, -L (Skip First Frame)
+    registerCommandLine(checked, "skipfirst", "--skipfirst");
+}
+
+void MainWindow::on_chbox_skiplast_toggled(bool checked)
+{
+    // Flag --skiplast, -L (Skip Last Frame)
+    registerCommandLine(checked, "skiplast", "--skiplast");
+}
+
+void MainWindow::on_chbox_layers_toggled(bool checked)
+{
+
+}
+
+void MainWindow::on_chbox_t_toggled(bool checked)
+{
+    // Flag -t (Thread)
+    std::string tmp { "-t " + std::to_string(ui->spnBox_threads->value())};
+    registerCommandLine(checked, "t", tmp);
+}
+
+void MainWindow::on_spnBox_threads_valueChanged(const QString &arg1)
+{
+    m_test["t"] = "-t " + arg1.toStdString();
+}
+
+void MainWindow::on_chbox_override_toggled(bool checked)
+{
+    // Flag --override (Override)
+
+    // ***************************************** arrumar essa parte *******************************************
+//    if(ui->chbox_override->isChecked())
+//    {
+//        if(ui->lineEdit_override->text() != "")
+//        {
+//            // Set override
+//            QRegularExpression exp = QRegularExpression("\\s+(?!\\d+])");
+//            QStringList myList = ui->lineEdit_override->text().split(exp);
+//            m_flagOverride = myList;
+
+//            tmpFlag.append("--override");
+//            tmpFlag.append(m_flagOverride);
+//        }
+//    }
+    // ***************************************** arrumar essa parte *******************************************
+
+    registerCommandLine(checked, "override", "--override");
+}
+
 
