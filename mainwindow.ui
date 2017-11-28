@@ -123,16 +123,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout_4">
        <item>
-        <widget class="QSplitter" name="splitter">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="styleSheet">
-          <string notr="true"/>
-         </property>
+        <widget class="QSplitter" name="splitter_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
@@ -575,7 +566,7 @@ p, li { white-space: pre-wrap; }
            </item>
           </layout>
          </widget>
-         <widget class="QWidget" name="layoutWidget">
+         <widget class="QWidget" name="">
           <layout class="QVBoxLayout" name="verticalLayout_2">
            <item>
             <widget class="QCheckBox" name="chbox_f">
@@ -606,34 +597,50 @@ p, li { white-space: pre-wrap; }
             </widget>
            </item>
            <item>
-            <widget class="QListWidget" name="listWidget_configFiles">
-             <property name="enabled">
+            <widget class="QSplitter" name="splitter">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="childrenCollapsible">
               <bool>false</bool>
              </property>
-             <property name="sizePolicy">
-              <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-               <horstretch>0</horstretch>
-               <verstretch>0</verstretch>
-              </sizepolicy>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>0</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>16777215</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
-             <property name="selectionMode">
-              <enum>QAbstractItemView::ExtendedSelection</enum>
-             </property>
+             <widget class="QListWidget" name="listWidget">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Maximum">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
+             <widget class="QListWidget" name="listWidget_configFiles">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true"/>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
+              </property>
+             </widget>
             </widget>
            </item>
           </layout>
