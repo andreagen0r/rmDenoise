@@ -9,8 +9,8 @@ VERSION = $${GIT_VERSION}
 PRODUCT = "Renderman Denoise UI"
 COMPANY = "Nankin CGI"
 COPYRIGHT = "Copyright (c) by $${COMPANY}"
-PRMAN_PROSERVER = "RenderManProServer-21.5"
-PRMAN_FOR_MAYA = "RenderManForMaya-21.5-maya2017"
+PRMAN_PROSERVER = "RenderManProServer-21.6"
+PRMAN_FOR_MAYA = "RenderManForMaya-21.6-maya2017"
 
 DEFINES += APP_VERSION=\"\\\"$${GIT_VERSION}\\\"\" \
            APP_PRODUCT=\"\\\"$${PRODUCT}\\\"\" \

@@ -8,7 +8,6 @@
 #include <QTimer>
 #include <QDirModel>
 #include <QFileDialog>
-
 #include <QThread>
 #include <QMessageBox>
 #include <QRegularExpression>

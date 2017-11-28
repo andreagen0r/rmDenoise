@@ -7,6 +7,8 @@
 #include <QCompleter>
 #include <QDirModel>
 
+#include <QDebug>
+
 Preferences::Preferences(QWidget *parent)
     : QDialog(parent),
       ui(new Ui::Preferences),
@@ -91,18 +93,20 @@ void Preferences::on_lineEdit_appPath_editingFinished()
     {
         m_isStateChange = (m_file.absoluteFilePath() !=
                 Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
+
     }
 
     if(m_file.isFile())
     {
         if(m_file.isExecutable())
         {
-            m_isStateChange = (ui->lineEdit_appPath->text() ==
+            m_isStateChange = (ui->lineEdit_appPath->text() !=
                                Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
         }
         else
         {
             ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
+            m_isStateChange = false;
         }
     }
     else
@@ -116,6 +120,7 @@ void Preferences::on_lineEdit_appPath_editingFinished()
         msgBox.exec();
 
         ui->lineEdit_appPath->setText(Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH));
+        m_isStateChange = false;
     }
 }
 
@@ -126,6 +131,7 @@ void Preferences::on_lineEdit_configFiles_editingFinished()
     if( ! m_isStateChange)
     {
         m_isStateChange = (m_dir.absolutePath() != Settings::getInstance().getSettings().value(Settings::CONFIG_FILES));
+
     }
 
     if( ! m_dir.exists())
@@ -143,17 +149,16 @@ void Preferences::on_lineEdit_configFiles_editingFinished()
 
 void Preferences::on_lineEdit_envKeyRenderman_editingFinished()
 {
-    if(!m_isStateChange)
+    if( ! m_isStateChange)
     {
         m_isStateChange = (ui->lineEdit_envKeyRenderman->text() !=
                 Settings::getInstance().getSettings().value(Settings::ENV_KEY_RENDERMAN));
     }
-
 }
 
 void Preferences::on_lineEdit_envValueRenderman_editingFinished()
 {
-    if(!m_isStateChange)
+    if( ! m_isStateChange)
     {
         m_isStateChange = (ui->lineEdit_envValueRenderman->text() !=
                 Settings::getInstance().getSettings().value(Settings::ENV_VALUE_RENDERMAN));
@@ -162,7 +167,7 @@ void Preferences::on_lineEdit_envValueRenderman_editingFinished()
 
 void Preferences::on_lineEdit_envKeyMaya_editingFinished()
 {
-    if(!m_isStateChange)
+    if( ! m_isStateChange)
     {
         m_isStateChange = (ui->lineEdit_envKeyMaya->text() !=
                 Settings::getInstance().getSettings().value(Settings::ENV_KEY_MAYA));
@@ -171,7 +176,7 @@ void Preferences::on_lineEdit_envKeyMaya_editingFinished()
 
 void Preferences::on_lineEdit_envValueMaya_editingFinished()
 {
-    if(!m_isStateChange)
+    if( ! m_isStateChange)
     {
         m_isStateChange = (ui->lineEdit_envValueMaya->text() !=
                 Settings::getInstance().getSettings().value(Settings::ENV_VALUE_MAYA));
@@ -180,7 +185,7 @@ void Preferences::on_lineEdit_envValueMaya_editingFinished()
 
 void Preferences::on_lineEdit_envKeyPath_editingFinished()
 {
-    if(!m_isStateChange)
+    if( ! m_isStateChange)
     {
         m_isStateChange = (ui->lineEdit_envKeyPath->text() !=
                 Settings::getInstance().getSettings().value(Settings::ENV_KEY_PATH));
@@ -189,7 +194,7 @@ void Preferences::on_lineEdit_envKeyPath_editingFinished()
 
 void Preferences::on_lineEdit_envValuePath_editingFinished()
 {
-    if(!m_isStateChange)
+    if( ! m_isStateChange)
     {
         m_isStateChange = (ui->lineEdit_envValuePath->text() !=
                 Settings::getInstance().getSettings().value(Settings::ENV_VALUE_PATH));
@@ -241,7 +246,6 @@ void Preferences::closeCheck()
     }
 
     m_isStateChange = false;
-
     close();
 }
 
