@@ -16,19 +16,19 @@ void PXRDenoise::renderDenoise()
 #ifdef __APPLE__
     QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 
-    env.insert(Settings::getInstance().getSettings().value(Settings::ENV_KEY_RENDERMAN),
-               Settings::getInstance().getSettings().value(Settings::ENV_VALUE_RENDERMAN));
+    env.insert(Settings::getInstance().getSettings().at(Settings::ENV_KEY_RENDERMAN),
+               Settings::getInstance().getSettings().at(Settings::ENV_VALUE_RENDERMAN));
 
-    env.insert(Settings::getInstance().getSettings().value(Settings::ENV_KEY_MAYA),
-               Settings::getInstance().getSettings().value(Settings::ENV_VALUE_MAYA));
+    env.insert(Settings::getInstance().getSettings().at(Settings::ENV_KEY_MAYA),
+               Settings::getInstance().getSettings().at(Settings::ENV_VALUE_MAYA));
 
-    env.insert(Settings::getInstance().getSettings().value(Settings::ENV_KEY_PATH),
-               Settings::getInstance().getSettings().value(Settings::ENV_VALUE_PATH));
+    env.insert(Settings::getInstance().getSettings().at(Settings::ENV_KEY_PATH),
+               Settings::getInstance().getSettings().at(Settings::ENV_VALUE_PATH));
 
     proc.setProcessEnvironment(env);
 #endif
 
-    proc.start(Settings::getInstance().getSettings().value(Settings::APPLICATION_PATH), getCommandLine());
+    proc.start(Settings::getInstance().getSettings().at(Settings::APPLICATION_PATH), getCommandLine());
 
     proc.waitForFinished(-1);
 

@@ -1,19 +1,25 @@
 #ifndef SETTINGS_H
 #define SETTINGS_H
 
-#include <QHash>
+#include <map>
+
+class QString;
 
 class Settings        
 {    
+    Settings(){}
+    Settings(Settings const&) = delete;
+    void operator = (Settings const&) = delete;
+
 public:
     // Singleton
     static Settings &getInstance();
 
-    void setSettings(const QHash<QString, QString> &in_settings);
+    void setSettings(const std::map<QString, QString> &in_settings);
 
-    QHash<QString, QString> getSettings() const;
+    std::map<QString, QString> getSettings() const;
 
-    QHash<QString, QString> getDefaultSettings() const;
+    std::map<QString, QString> getDefaultSettings() const;
 
     static const QString APPLICATION_PATH;
     static const QString CONFIG_FILES;
@@ -24,11 +30,6 @@ public:
     static const QString ENV_KEY_PATH;
     static const QString ENV_VALUE_PATH;
     static const QString FIRST_TIME;
-
-private:
-    Settings(){}
-    Settings(Settings const&) = delete;
-    void operator = (Settings const&) = delete;
 };
 
 #endif // SETTINGS_H

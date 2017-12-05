@@ -11,8 +11,15 @@
 #include <QDirModel>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <QRegularExpression>
 #include <QProgressDialog>
+
+#include <vector>
+#include <QDirIterator>
+#include <QShortcut>
+#include <QList>
+
 #include <QDebug>
 
 MainWindow::MainWindow(QWidget *parent)
@@ -30,11 +37,10 @@ MainWindow::MainWindow(QWidget *parent)
     loadFirstTime();
 
     // Load *.json config files to listwidget
-    loadConfigFiles();
+    loadFilterFiles();    
 
     // Verify how many threads there are in the computer and set the max number of threads to the spinBox
     ui->spnBox_threads->setMaximum(std::thread::hardware_concurrency());
-
 
     ui->lineEdit_imagePath->setAttribute(Qt::WA_MacShowFocusRect, 0);
     ui->lineEdit_layers->setAttribute(Qt::WA_MacShowFocusRect, 0);
@@ -47,7 +53,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->chbox_o, &QCheckBox::toggled, ui->lineEdit_name, &QLineEdit::setEnabled);
     connect(ui->chbox_outdir, &QCheckBox::toggled, ui->lineEdit_outdir, &QLineEdit::setEnabled);
     connect(ui->chbox_outdir, &QCheckBox::toggled, ui->btn_outDir, &QPushButton::setEnabled);
-    connect(ui->chbox_f, &QCheckBox::toggled, ui->listWidget_configFiles, &QListWidget::setEnabled);
+    connect(ui->chbox_f, &QCheckBox::toggled, ui->listWidget_defaultConfigFiles, &QListWidget::setEnabled);
+    connect(ui->chbox_f, &QCheckBox::toggled, ui->chbox_filterOverride, &QCheckBox::setEnabled);
+    connect(ui->chbox_filterOverride, &QCheckBox::toggled, ui->listWidget_configFiles, &QListWidget::setEnabled);
     connect(ui->chbox_crossframe, &QCheckBox::toggled, ui->chbox_skipfirst, &QCheckBox::setEnabled);
     connect(ui->chbox_crossframe, &QCheckBox::toggled, ui->chbox_skiplast, &QCheckBox::setEnabled);
     connect(ui->chbox_crossframe, &QCheckBox::toggled, ui->chbox_v, &QCheckBox::setEnabled);
@@ -59,12 +67,24 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_pxrDenoise.get(), &PXRDenoise::renderOutputMessage, this, &MainWindow::statusBarMsg);
     connect(m_timer.get(), &QTimer::timeout, this, &MainWindow::renderProgress);
 
+    ui->listWidget_configFiles->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->listWidget_configFiles, &QListWidget::customContextMenuRequested, this, &MainWindow::showContextMenu);
 
     m_completer->setModel(new QDirModel(m_completer.get()));
     m_completer->setCaseSensitivity(Qt::CaseInsensitive);
     m_completer->setCompletionMode(QCompleter::PopupCompletion);
     ui->lineEdit_imagePath->setCompleter(m_completer.get());
     ui->lineEdit_outdir->setCompleter(m_completer.get());
+
+
+    // ListWidget filter override actions shortcuts
+    QShortcut *m_shortcutDuplicate = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), ui->listWidget_configFiles);
+    QShortcut *m_shortcutEdit = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E), ui->listWidget_configFiles);
+    QShortcut *m_shortcutDelete = new QShortcut(QKeySequence(Qt::Key_Delete), ui->listWidget_configFiles);
+
+    connect(m_shortcutDuplicate, &QShortcut::activated, this, &MainWindow::duplicateItem);
+    connect(m_shortcutEdit, &QShortcut::activated, this, &MainWindow::editItem);
+    connect(m_shortcutDelete, &QShortcut::activated, this, &MainWindow::deleteItem);
 }
 
 MainWindow::~MainWindow()
@@ -333,9 +353,11 @@ void MainWindow::createFlagLine()
 
 void MainWindow::loadFirstTime()
 {
-    QHash<QString, QString> m_hash{Settings::getInstance().getSettings()};
+    std::map<QString, QString> m_hash{Settings::getInstance().getSettings()};
 
-    if( ! m_hash.contains(Settings::FIRST_TIME))
+    auto it = m_hash.find(Settings::FIRST_TIME);
+
+    if(it == m_hash.end())
     {
         // First time
         m_hash[Settings::FIRST_TIME] = QStringLiteral("1");
@@ -387,7 +409,7 @@ void MainWindow::on_actionPreferences_triggered()
 {
     Preferences m_prefUi(this);
     m_prefUi.exec();
-    loadConfigFiles();
+    loadFilterFiles();
 }
 
 void MainWindow::renderStatus(const bool &arg1)
@@ -420,21 +442,44 @@ void MainWindow::statusBarMsg(const QString &value)
     ui->statusBar->showMessage(myList.at(myList.length()-1));
 }
 
-void MainWindow::loadConfigFiles()
+void MainWindow::loadFilterFiles()
 {
-    QDir configFiles(Settings::getInstance().getSettings().value(Settings::getInstance().CONFIG_FILES));
+    QDir configFiles(Settings::getInstance().getSettings().at(Settings::CONFIG_FILES));
     configFiles.setFilter(QDir::Files | QDir::NoDotAndDotDot);
     QStringList myList(configFiles.entryList(QStringList(QStringLiteral("*.json"))));
 
     if(!myList.isEmpty())
     {
+        QStringList m_defaultList;
+
+        std::vector<int> i;
+        i.push_back(myList.indexOf(QStringLiteral("default.filter.json")));
+        i.push_back(myList.indexOf(QStringLiteral("sigmaAlphaOnly.filter.json")));
+        i.push_back(myList.indexOf(QStringLiteral("volume.filter.json")));
+
+        for(auto x : i)
+        {
+            m_defaultList.append(myList.at(x));
+        }
+
+        for(auto x : m_defaultList)
+        {
+            myList.removeOne(x);
+        }
+
+        ui->listWidget_defaultConfigFiles->clear();
+        ui->listWidget_defaultConfigFiles->addItems(m_defaultList);        
+        ui->listWidget_defaultConfigFiles->setCurrentRow(0);
+
         ui->listWidget_configFiles->clear();
         ui->listWidget_configFiles->addItems(myList);
         ui->listWidget_configFiles->setCurrentRow(0);
-        ui->chbox_f->setEnabled(true);
     }
     else
     {
+        ui->listWidget_defaultConfigFiles->clear();
+        ui->chbox_filterOverride->setEnabled(false);
+
         ui->listWidget_configFiles->clear();
         ui->chbox_f->setEnabled(false);
     }
@@ -568,6 +613,120 @@ void MainWindow::registerCommandLine(const bool &in_checked, const std::string &
     qDebug() << list;
 }
 
+void MainWindow::on_chbox_f_toggled(bool checked)
+{
+    if(checked)
+    {
+        // To do
+        // register command line
+    }
+    else
+    {
+        // To do
+        // remove register
+
+        ui->chbox_filterOverride->setChecked(false);
+    }
+}
+
+void MainWindow::showContextMenu(const QPoint &in_pos)
+{
+    QPoint globalPos = ui->listWidget_configFiles->mapToGlobal(in_pos);
+
+    QMenu myMenu;
+    myMenu.addAction("Duplicate", this, SLOT(duplicateItem()), QKeySequence(Qt::CTRL + Qt::Key_D));
+    myMenu.addSeparator();
+    myMenu.addAction("Edit", this, SLOT(editItem()), QKeySequence(Qt::CTRL + Qt::Key_E));
+    myMenu.addSeparator();
+    myMenu.addAction("Delete", this, SLOT(deleteItem()), QKeySequence(Qt::Key_Delete));
+
+    myMenu.exec(globalPos);
+}
+
+void MainWindow::duplicateItem()
+{
+//    bool ok;
+//    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"), tr("User name:"), QLineEdit::Normal,
+//                                               QDir::home().dirName(), &ok);
+
+//    if (ok && !text.isEmpty())
+//        qDebug() << "nome do arquivo" << text;
+    auto m_file = ui->listWidget_configFiles->selectedItems();
+
+
+    if(m_file.size() > 1)
+    {
+        ui->statusBar->showMessage(tr("You can't duplicate multiple files at once."));
+    }
+
+    else if(m_file.size() == 1)
+    {
+        QFileInfo fileInfo(m_file.at(0)->text());
+        QString newName{fileInfo.completeBaseName()};
+
+        QInputDialog m_dialog;
+        m_dialog.setWindowTitle(tr("Duplicate"));
+        m_dialog.setLabelText(tr("Enter a new name"));
+        m_dialog.setTextValue(QString("%1 %2%3").arg(newName, " copy", ".json"));
+        m_dialog.setInputMode(QInputDialog::TextInput);
+        m_dialog.setFixedSize(350, 200);
+        int buttons = m_dialog.exec();
+
+        switch (buttons)
+        {
+        case 1:
+            qDebug() << "botão ok - Aqui fazer a mágica da duplicação";
+
+            // fazer ao fim da duplicação selecionar o novo arquivo
+
+            loadFilterFiles();
+            break;
+        default:
+            break;
+        }
+    }
+}
+void MainWindow::editItem()
+{
+    qDebug() << "Entra no modo de Edição do item";
+    loadFilterFiles();
+}
+void MainWindow::deleteItem()
+{
+    auto x = ui->listWidget_configFiles->selectedItems();
+    QString m_selectedFiles;
+    for(auto i : x)
+    {
+        m_selectedFiles.append(i->text());
+        m_selectedFiles.append("\n");
+    }
+
+    QMessageBox msgBox;
+    msgBox.setIcon(QMessageBox::Question);
+    msgBox.setWindowTitle(tr("Delete File(s)"));
+    msgBox.setText(tr("Do you realy want delete this files?"));
+    msgBox.setInformativeText(tr("%1").arg(m_selectedFiles));
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    int buttons = msgBox.exec();
+
+    switch (buttons)
+    {
+    case QMessageBox::Yes:
+        for(auto x : ui->listWidget_configFiles->selectedItems())
+        {
+            QDir m(QString("%1/%2").arg(Settings::getInstance().getSettings().at(Settings::CONFIG_FILES), x->text()));
+            m.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+            qDebug() << m.remove(QString("%1/%2").arg(
+                                     Settings::getInstance().getSettings().at(
+                                     Settings::CONFIG_FILES), x->text()));
+        }
+        loadFilterFiles();
+        break;
+    default:
+        break;
+    }
+}
+
 void MainWindow::on_chbox_n_toggled(bool checked)
 {
     // Flag -n (Output basename)
@@ -644,5 +803,4 @@ void MainWindow::on_chbox_override_toggled(bool checked)
 
     registerCommandLine(checked, "override", "--override");
 }
-
 

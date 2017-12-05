@@ -13,6 +13,7 @@
 #include <iostream>
 
 class QCompleter;
+class QShortcut;
 
 namespace Ui {
 class MainWindow;
@@ -43,7 +44,7 @@ private slots:
 
     void statusBarMsg(const QString &value);
 
-    void loadConfigFiles();
+    void loadFilterFiles();
 
     void on_chbox_n_toggled(bool checked);
 
@@ -64,6 +65,12 @@ private slots:
 
     void on_chbox_override_toggled(bool checked);
 
+    void on_chbox_f_toggled(bool checked);
+
+    void showContextMenu(const QPoint&);
+    void duplicateItem();
+    void editItem();
+    void deleteItem();
 
 private:
     Ui::MainWindow *ui;

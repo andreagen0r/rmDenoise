@@ -2,6 +2,7 @@
 
 #include <QSettings>
 #include <QDir>
+#include <QDebug>
 
 const QString Settings::APPLICATION_PATH = QStringLiteral("APPLICATION_PATH");
 const QString Settings::CONFIG_FILES = QStringLiteral("CONFIG_FILES");
@@ -20,29 +21,29 @@ Settings &Settings::getInstance()
     return m_instance;
 }
 
-void Settings::setSettings(const QHash<QString, QString> &in_settings)
+void Settings::setSettings(const std::map<QString, QString> &in_settings)
 {
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    for(auto m_keys : in_settings.keys())
+    for(auto it : in_settings)
     {
-        m_settings.setValue(m_keys, in_settings.value(m_keys));
+        m_settings.setValue(it.first, it.second);
     }
 
     m_settings.endGroup();
 }
 
-QHash<QString, QString> Settings::getSettings() const
+std::map<QString, QString> Settings::getSettings() const
 {
-    QHash<QString, QString> m_hash;
+    std::map<QString, QString> m_hash;
 
     QSettings m_settings(APP_COMPANY, APP_PRODUCT);
     m_settings.beginGroup(APP_PRODUCT);
 
-    for(auto m_keys : m_settings.allKeys())
+    for(QString it : m_settings.allKeys())
     {
-        m_hash[m_keys] = m_settings.value(m_keys).toString();
+        m_hash[it] = m_settings.value(it).toString();
     }
 
     m_settings.endGroup();
@@ -50,9 +51,9 @@ QHash<QString, QString> Settings::getSettings() const
     return m_hash;
 }
 
-QHash<QString, QString> Settings::getDefaultSettings() const
+std::map<QString, QString> Settings::getDefaultSettings() const
 {
-    QHash<QString, QString> m_hash;
+    std::map<QString, QString> m_default;
 
     const QString m_prmanProServer = QString("%1%2").arg("Pixar/", APP_PRMAN_PROSERVER);
     const QString m_rms = QString("%1%2").arg("Pixar/", APP_PRMAN_FOR_MAYA);
@@ -61,35 +62,35 @@ QHash<QString, QString> Settings::getDefaultSettings() const
 
 #ifdef __APPLE__
     // Dynamic
-    m_hash[APPLICATION_PATH] = QDir::rootPath() + "Applications/" + m_defaultDenoise;
-    m_hash[CONFIG_FILES] = QDir::rootPath() + "Applications/" + m_defaultConfigFiles;
-    m_hash[ENV_VALUE_RENDERMAN] = QDir::rootPath() + "Applications/" + m_prmanProServer;
-    m_hash[ENV_VALUE_MAYA] = QDir::rootPath() + "Applications/" + m_rms;
+    m_default[APPLICATION_PATH] = QDir::rootPath() + "Applications/" + m_defaultDenoise;
+    m_default[CONFIG_FILES] = QDir::rootPath() + "Applications/" + m_defaultConfigFiles;
+    m_default[ENV_VALUE_RENDERMAN] = QDir::rootPath() + "Applications/" + m_prmanProServer;
+    m_default[ENV_VALUE_MAYA] = QDir::rootPath() + "Applications/" + m_rms;
     // Literal
-    m_hash[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
-    m_hash[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
-    m_hash[ENV_KEY_PATH] = QStringLiteral("PATH");
-    m_hash[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
+    m_default[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_default[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_default[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_default[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 
 
 #elif WIN32
     // Dynamic
-    m_hash[APPLICATION_PATH] = QDir::rootPath() + "Program Files" + m_defaultDenoise + ".exe";
-    m_hash[CONFIG_FILES] = QDir::rootPath() + "Program Files" + m_defaultConfigFiles;
+    m_default[APPLICATION_PATH] = QDir::rootPath() + "Program Files" + m_defaultDenoise + ".exe";
+    m_default[CONFIG_FILES] = QDir::rootPath() + "Program Files" + m_defaultConfigFiles;
 
 #elif __linux__
     // Dynamic
-    m_hash[APPLICATION_PATH] = QDir::rootPath() + "Applications/" + m_defaultDenoise;
-    m_hash[CONFIG_FILES] = QDir::rootPath() + "Applications/" + m_defaultConfigFiles;
-    m_hash[ENV_VALUE_RENDERMAN] = QDir::rootPath() + "Applications/" + m_prmanProServer;
-    m_hash[ENV_VALUE_MAYA] = QDir::rootPath() + "Applications/" + m_rms;
+    m_default[APPLICATION_PATH] = QDir::rootPath() + "Applications/" + m_defaultDenoise;
+    m_default[CONFIG_FILES] = QDir::rootPath() + "Applications/" + m_defaultConfigFiles;
+    m_default[ENV_VALUE_RENDERMAN] = QDir::rootPath() + "Applications/" + m_prmanProServer;
+    m_default[ENV_VALUE_MAYA] = QDir::rootPath() + "Applications/" + m_rms;
     // Literal
-    m_hash[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
-    m_hash[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
-    m_hash[ENV_KEY_PATH] = QStringLiteral("PATH");
-    m_hash[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
+    m_default[ENV_KEY_RENDERMAN] = QStringLiteral("RMANTREE");
+    m_default[ENV_KEY_MAYA] = QStringLiteral("RMSTREE");
+    m_default[ENV_KEY_PATH] = QStringLiteral("PATH");
+    m_default[ENV_VALUE_PATH] = QStringLiteral("${RMANTREE}/bin:${PATH}");
 
 #endif
 
-    return m_hash;
+    return m_default;
 }
