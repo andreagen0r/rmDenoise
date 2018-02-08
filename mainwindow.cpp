@@ -16,7 +16,6 @@
 #include <QProgressDialog>
 
 #include <vector>
-#include <QDirIterator>
 #include <QShortcut>
 #include <QList>
 
@@ -77,10 +76,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lineEdit_outdir->setCompleter(m_completer.get());
 
 
-    // ListWidget filter override actions shortcuts
-    QShortcut *m_shortcutDuplicate = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_D), ui->listWidget_configFiles);
-    QShortcut *m_shortcutEdit = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E), ui->listWidget_configFiles);
-    QShortcut *m_shortcutDelete = new QShortcut(QKeySequence(Qt::Key_Delete), ui->listWidget_configFiles);
+    // ListWidget filter override shortcuts
+    QShortcut *m_shortcutDuplicate = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_D),
+                                                   ui->listWidget_configFiles, nullptr,nullptr, Qt::WidgetShortcut);
+
+    QShortcut *m_shortcutEdit = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_E),
+                                              ui->listWidget_configFiles, nullptr,nullptr, Qt::WidgetShortcut);
+
+    QShortcut *m_shortcutDelete = new QShortcut(QKeySequence(Qt::Key_Delete),
+                                                ui->listWidget_configFiles, nullptr,nullptr, Qt::WidgetShortcut);
 
     connect(m_shortcutDuplicate, &QShortcut::activated, this, &MainWindow::duplicateItem);
     connect(m_shortcutEdit, &QShortcut::activated, this, &MainWindow::editItem);
@@ -109,7 +113,8 @@ void MainWindow::on_btn_run_clicked()
                 }
                 else
                 {
-                    QMessageBox::information(this, tr("Information!"), tr("Cannot render because the selected directory is not valid!"));
+                    QMessageBox::information(this, tr("Information!"),
+                                             tr("Cannot render because the selected directory is not valid!"));
                 }
             }
             else
@@ -292,25 +297,25 @@ void MainWindow::createFlagLine()
         }
     }
 
-    // Flag -f (Config. Files)
-    if(ui->chbox_f->isChecked())
-    {
-        // Set configFiles
-        QList<QString> selectedFiles;
-        foreach (QListWidgetItem *item, ui->listWidget_configFiles->selectedItems())
-        {
-            selectedFiles.append(item->text());
-        }
-        QStringList mflag;
-        foreach (QString item, selectedFiles)
-        {
-            mflag.append("-f");
-            mflag.append(item);
-        }
-        m_flagConfigFiles = mflag;
+//    // Flag -f (Config. Files)
+//    if(ui->chbox_f->isChecked())
+//    {
+//        // Set configFiles
+//        QList<QString> selectedFiles;
+//        foreach (QListWidgetItem *item, ui->listWidget_configFiles->selectedItems())
+//        {
+//            selectedFiles.append(item->text());
+//        }
+//        QStringList mflag;
+//        foreach (QString item, selectedFiles)
+//        {
+//            mflag.append("-f");
+//            mflag.append(item);
+//        }
+//        m_flagConfigFiles = mflag;
 
-        tmpFlag.append(m_flagConfigFiles);
-    }
+//        tmpFlag.append(m_flagConfigFiles);
+//    }
 
     // Flag -t (Thread)
 //    if(ui->chbox_t->isChecked())
@@ -365,6 +370,8 @@ void MainWindow::loadFirstTime()
         Settings::getInstance().setSettings(Settings::getInstance().getDefaultSettings());
     }
 }
+
+
 
 void MainWindow::on_actionAboutQT_triggered()
 {
@@ -444,8 +451,11 @@ void MainWindow::statusBarMsg(const QString &value)
 
 void MainWindow::loadFilterFiles()
 {
+    // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX  está com problema XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+
     QDir configFiles(Settings::getInstance().getSettings().at(Settings::CONFIG_FILES));
     configFiles.setFilter(QDir::Files | QDir::NoDotAndDotDot);
+
     QStringList myList(configFiles.entryList(QStringList(QStringLiteral("*.json"))));
 
     if(!myList.isEmpty())
@@ -460,6 +470,7 @@ void MainWindow::loadFilterFiles()
         for(auto x : i)
         {
             m_defaultList.append(myList.at(x));
+            qDebug() << x;
         }
 
         for(auto x : m_defaultList)
@@ -592,98 +603,82 @@ bool MainWindow::checkDir(const QString &value)
 
 
 
-void MainWindow::registerCommandLine(const bool &in_checked, const std::string &in_flagKey,
-                                     const std::string &in_flagValue)
+bool MainWindow::registerCommandLine(const std::string &in_flagKey, const std::string &in_flagValue)
 {
-    if(in_checked)
-    {
-        m_test.insert(std::make_pair(in_flagKey, in_flagValue));
-    }
-    else
-    {
-        m_test.erase(in_flagKey);
-    }
+    auto it = m_test.insert(std::make_pair(in_flagKey, in_flagValue));
 
-    QStringList list;
-    for(auto it : m_test)
-    {
-        list.append(QString::fromStdString(it.second));
-    }
-
-    qDebug() << list;
+    return it.second;
 }
 
-void MainWindow::on_chbox_f_toggled(bool checked)
+bool MainWindow::unRegisterCommandLine(const std::string &in_flagKey)
 {
-    if(checked)
-    {
-        // To do
-        // register command line
-    }
-    else
-    {
-        // To do
-        // remove register
+    bool success = m_test.erase(in_flagKey);
 
-        ui->chbox_filterOverride->setChecked(false);
-    }
+    return success;
 }
 
 void MainWindow::showContextMenu(const QPoint &in_pos)
 {
     QPoint globalPos = ui->listWidget_configFiles->mapToGlobal(in_pos);
 
-    QMenu myMenu;
-    myMenu.addAction("Duplicate", this, SLOT(duplicateItem()), QKeySequence(Qt::CTRL + Qt::Key_D));
-    myMenu.addSeparator();
-    myMenu.addAction("Edit", this, SLOT(editItem()), QKeySequence(Qt::CTRL + Qt::Key_E));
-    myMenu.addSeparator();
-    myMenu.addAction("Delete", this, SLOT(deleteItem()), QKeySequence(Qt::Key_Delete));
+    QMenu menu;
+    menu.addAction("Duplicate", this, SLOT(duplicateItem()), QKeySequence(Qt::CTRL + Qt::Key_D));
+    menu.addSeparator();
+    menu.addAction("Edit", this, SLOT(editItem()), QKeySequence(Qt::CTRL + Qt::Key_E));
+    menu.addSeparator();
+    menu.addAction("Delete", this, SLOT(deleteItem()), QKeySequence(Qt::Key_Delete));
 
-    myMenu.exec(globalPos);
+    menu.exec(globalPos);
 }
 
 void MainWindow::duplicateItem()
 {
-//    bool ok;
-//    QString text = QInputDialog::getText(this, tr("QInputDialog::getText()"), tr("User name:"), QLineEdit::Normal,
-//                                               QDir::home().dirName(), &ok);
+    auto selectedFiles = ui->listWidget_configFiles->selectedItems();
 
-//    if (ok && !text.isEmpty())
-//        qDebug() << "nome do arquivo" << text;
-    auto m_file = ui->listWidget_configFiles->selectedItems();
-
-
-    if(m_file.size() > 1)
+    if(selectedFiles.size() == 1)
     {
-        ui->statusBar->showMessage(tr("You can't duplicate multiple files at once."));
-    }
+        QFileInfo oldFileName(selectedFiles.at(0)->text());
 
-    else if(m_file.size() == 1)
-    {
-        QFileInfo fileInfo(m_file.at(0)->text());
-        QString newName{fileInfo.completeBaseName()};
-
-        QInputDialog m_dialog;
-        m_dialog.setWindowTitle(tr("Duplicate"));
-        m_dialog.setLabelText(tr("Enter a new name"));
-        m_dialog.setTextValue(QString("%1 %2%3").arg(newName, " copy", ".json"));
-        m_dialog.setInputMode(QInputDialog::TextInput);
-        m_dialog.setFixedSize(350, 200);
-        int buttons = m_dialog.exec();
+        QInputDialog msgBox;
+        msgBox.setWindowTitle(tr("Duplicate"));
+        msgBox.setLabelText(tr("Enter a new name"));
+        msgBox.setTextValue(oldFileName.completeBaseName() + " copy.json");
+        msgBox.setInputMode(QInputDialog::TextInput);
+        msgBox.setFixedSize(350, 200);
+        int buttons = msgBox.exec();
 
         switch (buttons)
         {
         case 1:
-            qDebug() << "botão ok - Aqui fazer a mágica da duplicação";
+        {
+            QString newName = msgBox.textValue();
+            QFileInfo newNameInfo{newName};
+            if(newNameInfo.suffix() == "")
+            {
+                newName.append(".json");
+            }
 
-            // fazer ao fim da duplicação selecionar o novo arquivo
+            QFile copyFile;
+            bool success = copyFile.copy(Settings::getInstance().getSettings().at(
+                              Settings::CONFIG_FILES) + QDir::separator() + oldFileName.fileName(),
+                          Settings::getInstance().getSettings().at(
+                              Settings::CONFIG_FILES) + QDir::separator() + newName);
+
+            if(success)
+            {
+                ui->statusBar->showMessage(QString("The file was duplicated"));
+            }
 
             loadFilterFiles();
+        }
             break;
         default:
             break;
         }
+    }
+    else if(selectedFiles.size() > 1)
+    {
+        ui->statusBar->showMessage(tr("You can't duplicate multiple files at once."));
     }
 }
 void MainWindow::editItem()
@@ -730,38 +725,81 @@ void MainWindow::deleteItem()
 void MainWindow::on_chbox_n_toggled(bool checked)
 {
     // Flag -n (Output basename)
-    registerCommandLine(checked, "n", "-n");
+    if(checked)
+    {
+        registerCommandLine("n", "-n");
+    }
+    else
+    {
+        unRegisterCommandLine("n");
+    }
 }
 
 void MainWindow::on_chbox_filtervariance_toggled(bool checked)
 {
     // Flag --filtervariance
-    registerCommandLine(checked, "filtervariance", "--filtervariance");
+    if(checked)
+    {
+        registerCommandLine("filtervariance", "--filtervariance");
+    }
+    else
+    {
+        unRegisterCommandLine("filtervariance");
+    }
 }
 
 void MainWindow::on_chbox_crossframe_toggled(bool checked)
 {
     // Flag --crossframe (Cross-Frame)
-    registerCommandLine(checked, "crossframe", "--crossframe");
+    if(checked)
+    {
+        registerCommandLine("crossframe", "--crossframe");
+    }
+    else
+    {
+        unRegisterCommandLine("crossframe");
+    }
 }
 
 void MainWindow::on_chbox_v_toggled(bool checked)
 {
     // Flag -v (Motion Vectors)
-    registerCommandLine(checked, "v", "-v");
-    registerCommandLine(checked, "variance", "variance");
+    if(checked)
+    {
+        registerCommandLine("v", "-v");
+        registerCommandLine("variance", "variance");
+    }
+    else
+    {
+        unRegisterCommandLine("v");
+        unRegisterCommandLine("variance");
+    }
 }
 
 void MainWindow::on_chbox_skipfirst_toggled(bool checked)
 {
-    // Flag --skipfirst, -F, -L (Skip First Frame)
-    registerCommandLine(checked, "skipfirst", "--skipfirst");
+    // Flag --skipfirst, -F (Skip First Frame)
+    if(checked)
+    {
+        registerCommandLine("skipfirst", "--skipfirst");
+    }
+    else
+    {
+        unRegisterCommandLine("skipfirst");
+    }
 }
 
 void MainWindow::on_chbox_skiplast_toggled(bool checked)
 {
     // Flag --skiplast, -L (Skip Last Frame)
-    registerCommandLine(checked, "skiplast", "--skiplast");
+    if(checked)
+    {
+        registerCommandLine("skiplast", "--skiplast");
+    }
+    else
+    {
+        unRegisterCommandLine("skiplast");
+    }
 }
 
 void MainWindow::on_chbox_layers_toggled(bool checked)
@@ -772,8 +810,15 @@ void MainWindow::on_chbox_layers_toggled(bool checked)
 void MainWindow::on_chbox_t_toggled(bool checked)
 {
     // Flag -t (Thread)
-    std::string tmp { "-t " + std::to_string(ui->spnBox_threads->value())};
-    registerCommandLine(checked, "t", tmp);
+    if(checked)
+    {
+        std::string tmp { "-t " + std::to_string(ui->spnBox_threads->value())};
+        registerCommandLine("t", tmp);
+    }
+    else
+    {
+        unRegisterCommandLine("t");
+    }
 }
 
 void MainWindow::on_spnBox_threads_valueChanged(const QString &arg1)
@@ -801,6 +846,64 @@ void MainWindow::on_chbox_override_toggled(bool checked)
 //    }
     // ***************************************** arrumar essa parte *******************************************
 
-    registerCommandLine(checked, "override", "--override");
+    registerCommandLine("override", "--override");
 }
 
+
+void MainWindow::on_listWidget_defaultConfigFiles_itemSelectionChanged()
+{
+    //    // Flag -f (Config. Files)
+    //    if(ui->chbox_f->isChecked())
+    //    {
+    //        // Set configFiles
+    //        QList<QString> selectedFiles;
+    //        foreach (QListWidgetItem *item, ui->listWidget_configFiles->selectedItems())
+    //        {
+    //            selectedFiles.append(item->text());
+    //        }
+    //        QStringList mflag;
+    //        foreach (QString item, selectedFiles)
+    //        {
+    //            mflag.append("-f");
+    //            mflag.append(item);
+    //        }
+    //        m_flagConfigFiles = mflag;
+
+    //        tmpFlag.append(m_flagConfigFiles);
+    //    }
+
+//        auto tmp = ui->listWidget_defaultConfigFiles->selectedItems();
+//        int currentRow {ui->listWidget_defaultConfigFiles->currentRow()};
+
+//        qDebug() << ;
+
+        QString output;
+        output = "-f " + ui->listWidget_defaultConfigFiles->selectedItems().at(0)->text();
+//        qDebug() << output;
+
+
+        bool checked{false};
+
+
+        if(checked)
+        {
+            registerCommandLine("f", output.toStdString());
+        }
+        else
+        {
+            unRegisterCommandLine("f");
+        }
+}
+
+void MainWindow::on_chbox_f_toggled(bool checked)
+{
+    if( ! checked)
+    {
+        ui->chbox_filterOverride->setChecked(false);
+    }
+    else
+    {
+//        ui->listWidget_defaultConfigFiles->setCurrentRow(1);
+//        ui->listWidget_defaultConfigFiles->setCurrentRow(0);
+    }
+}

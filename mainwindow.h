@@ -65,12 +65,14 @@ private slots:
 
     void on_chbox_override_toggled(bool checked);
 
-    void on_chbox_f_toggled(bool checked);
-
     void showContextMenu(const QPoint&);
     void duplicateItem();
     void editItem();
     void deleteItem();
+
+    void on_listWidget_defaultConfigFiles_itemSelectionChanged();
+
+    void on_chbox_f_toggled(bool checked);
 
 private:
     Ui::MainWindow *ui;
@@ -82,8 +84,8 @@ private:
     void createFlagLine();
     void loadFirstTime();
 
-    void registerCommandLine(const bool &in_checked, const std::string &in_flagKey,
-                             const std::string &in_flagValue);
+    bool registerCommandLine(const std::string &in_flagKey, const std::string &in_flagValue);
+    bool unRegisterCommandLine(const std::string &in_flagKey);
 
     bool checkImages(const QStringList &value);
     QStringList notValidImages(const QStringList &value);
